@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>icbhplus · 쿠팡 추천 리스트 자동 모음</title>
+  <meta name="description" content="쿠팡 파트너스 API를 활용하여 자동 생성되는 인기 상품 추천 페이지 모음.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; margin:0; padding:32px; background:#0f172a; color:#e5e7eb; }
+    h1 { margin:0 0 8px; font-size:28px; }
+    p.sub { margin:0 0 24px; font-size:14px; color:#9ca3af; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; max-width:1080px; margin:0 auto; }
+    .card { background:#111827; border-radius:16px; padding:14px; border:1px solid rgba(148,163,253,0.12); box-shadow:0 12px 35px rgba(15,23,42,0.35); transition:all .18s ease; }
+    .card:hover { transform:translateY(-4px); box-shadow:0 18px 45px rgba(15,23,42,0.6); border-color:#38bdf8; }
+    .card-title { font-size:16px; margin:0 0 6px; color:#e5e7eb; }
+    .card-link { font-size:13px; color:#38bdf8; text-decoration:none; }
+    .badge { display:inline-block; margin-top:4px; padding:2px 8px; border-radius:999px; font-size:10px; background:rgba(56,189,248,0.12); color:#38bdf8; }
+    header.wrap { max-width:1080px; margin:0 auto 24px; }
+    .topbar { font-size:11px; color:#64748b; margin-bottom:4px; }
+  </style>
+</head>
+<body>
+<header class="wrap">
+  <div class="topbar">icbhplus · 자동화된 쿠팡 추천 포털</div>
+  <h1>자동 생성되는 추천 리스트</h1>
+  <p class="sub">
+    CMD에서 키워드만 넣으면 여기 페이지가 자동으로 추가됩니다.
+    모든 링크는 쿠팡 파트너스 링크이며, 구매 시 일정액의 수수료를 제공받을 수 있습니다.
+  </p>
+</header>
+
+<main class="grid">
+
+  <article class="card">
+    <div class="card-title">아이폰 추천</div>
+    <a class="card-link" href="/posts/아이폰-추천.html">바로 보기 →</a>
+    <div class="badge">자동 생성</div>
+  </article>
+
+</main>
+</body>
+</html>
