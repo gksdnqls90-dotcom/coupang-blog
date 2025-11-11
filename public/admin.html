@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>icbhplus 관리자 패널 (임시)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #020817;
+            color: #e5e7eb;
+            margin: 0;
+            padding: 32px;
+        }
+
+        .wrap {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        code {
+            background: #111827;
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <h1>icbhplus 관리자 패널 (1단계)</h1>
+        <p>※ 이 페이지는 검색엔진에서 제외되며, 운영자만 보는 용도입니다.</p>
+
+        <h2>콘텐츠 생성 방법</h2>
+        <ol>
+            <li>서버/PC에서 프로젝트 폴더로 이동:
+                <div><code>cd COUPANG-BLOG</code></div>
+            </li>
+            <li>단일 키워드 생성:
+                <div><code>node generatePost.js "공기청정기 추천"</code></div>
+            </li>
+            <li>여러 키워드 한 번에:
+                <div><code>node bulkGenerate.js</code></div>
+            </li>
+            <li>명령 실행 후:
+                <div><code>git add public && git commit -m "update" && git push</code></div>
+            </li>
+            <li>푸시가 완료되면 Netlify가 자동 배포 → <code>icbhplus.com</code>에서 새 페이지를 확인합니다.</li>
+        </ol>
+
+        <p>다음 단계: 이 페이지에서 바로 키워드를 입력해 생성 버튼을 누를 수 있도록 Netlify Functions와 연동할 수 있습니다. 그건 나중에 토큰/보안 세팅 완료 후 붙이면 됩니다.</p>
+    </div>
+</body>
+
+</html>
