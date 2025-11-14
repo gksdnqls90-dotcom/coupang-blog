@@ -1,21 +1,20 @@
 // netlify/functions/livePost.js
-const path = require("path");
 
-// 루트에 있는 CoupangPartners.js 재사용
-const CoupangPartners = require('../../CoupangPartners');
+// 루트의 CoupangPartners.js 재사용 (경로 주의!)
+const CoupangPartners = require("../../CoupangPartners");
 
-// 간단한 HTML 템플릿 함수
+// 상품 리스트 → HTML 문자열
 function renderHtml(keyword, products) {
     const title = `${keyword} 추천 쿠팡 상품 모음`;
 
-    const itemsHtml = products
+    const itemsHtml = (products || [])
         .map((p) => {
             return `
         <article class="item">
           <a href="${p.productUrl}" target="_blank" rel="nofollow noopener noreferrer">
             <img src="${p.productImage}" alt="${p.productName}">
             <h2>${p.productName}</h2>
-            <p class="price">${p.productPrice.toLocaleString()}원</p>
+            <p class="price">${Number(p.productPrice).toLocaleString()}원</p>
             <p class="meta">
               ${p.isRocket ? "로켓배송 · " : ""}${p.isFreeShipping ? "무료배송" : ""}
             </p>
@@ -115,7 +114,7 @@ function renderHtml(keyword, products) {
     <p class="sub">쿠팡 파트너스 API를 통해 자동으로 불러온 ${keyword} 관련 인기 상품 목록입니다.</p>
   </header>
   <main>
-    ${itemsHtml}
+    ${itemsHtml || "<p>표시할 상품이 없습니다.</p>"}
   </main>
   <footer>
     이 포스팅은 쿠팡 파트너스 활동의 일환으로 이에 따른 일정액의 수수료를 제공받습니다.
@@ -131,7 +130,6 @@ exports.handler = async (event) => {
             return { statusCode: 400, body: "slug is required" };
         }
 
-        // 슬러그 → 키워드로 변환 (예: "공기청정기-추천" → "공기청정기 추천")
         const decoded = decodeURIComponent(slug);
         const keyword = decoded.replace(/-/g, " ");
 
@@ -140,9 +138,7 @@ exports.handler = async (event) => {
             process.env.CP_SECRET_KEY
         );
 
-        // 예: 10개만 가져오기 (네가 쓰던 searchProducts 시그니처 맞춰서 숫자 조절)
         const products = await cp.searchProducts(keyword, 10);
-
         const html = renderHtml(keyword, products);
 
         return {

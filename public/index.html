@@ -99,6 +99,15 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 4px;
+      gap: 4px;
+    }
+
+    .url-text {
+      font-size: 11px;
+      color: #9ca3af;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .delete-btn {
@@ -110,27 +119,65 @@
       color: #6b7280;
       cursor: not-allowed;
       opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    .empty {
+      max-width: 1080px;
+      margin: 40px auto;
+      font-size: 13px;
+      color: #9ca3af;
     }
   </style>
 
   <script>
-    // 카드 전체 클릭 → data-link로 이동
-    document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll(".card").forEach(card => {
-        card.addEventListener("click", (e) => {
-          // 삭제 버튼은 클릭 무시 (disabled지만 혹시 모를 상황 방지)
-          if (e.target.closest(".delete-btn")) return;
+    async function loadKeywords() {
+      try {
+        const res = await fetch("/.netlify/functions/keywords");
+        const list = await res.json();
+        const grid = document.getElementById("cardGrid");
 
-          const link = card.getAttribute("data-link");
-          if (link) window.location.href = link;
+        if (!Array.isArray(list) || list.length === 0) {
+          grid.innerHTML = "";
+          document.getElementById("empty").style.display = "block";
+          return;
+        }
+
+        document.getElementById("empty").style.display = "none";
+        grid.innerHTML = "";
+
+        list.forEach(item => {
+          const card = document.createElement("article");
+          card.className = "card";
+          card.dataset.link = "/live/" + item.slug;
+
+          card.innerHTML = `
+            <div class="card-title">${item.title}</div>
+            <span class="badge">자동 생성</span>
+            <div class="card-footer">
+              <span class="url-text">/live/${item.slug}</span>
+              <button class="delete-btn" disabled>삭제(관리자 전용)</button>
+            </div>
+          `;
+
+          card.addEventListener("click", (e) => {
+            if (e.target.closest(".delete-btn")) return;
+            const link = card.dataset.link;
+            if (link) window.location.href = link;
+          });
+
+          grid.appendChild(card);
         });
-      });
-    });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadKeywords);
   </script>
 </head>
 
 <body>
-
   <header class="wrap">
     <div>
       <div class="topbar">icbhplus · 쿠팡 추천 포털</div>
@@ -139,136 +186,11 @@
     <a href="admin.html" class="admin-btn">관리자 페이지</a>
   </header>
 
-  <main class="grid">
+  <main class="grid" id="cardGrid"></main>
 
-    <article class="card" data-link="/live/게이밍-마우스-추천">
-      <div class="card-title">게이밍 마우스 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/게이밍-마우스-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/게이밍-키보드-추천">
-      <div class="card-title">게이밍 키보드 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/게이밍-키보드-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/과일-추천">
-      <div class="card-title">과일 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/과일-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/과자-추천">
-      <div class="card-title">과자 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/과자-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/냉동식품-추천">
-      <div class="card-title">냉동식품 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/냉동식품-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/덴탈-마스크-추천">
-      <div class="card-title">덴탈 마스크 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/덴탈-마스크-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/무선-이어폰-추천">
-      <div class="card-title">무선 이어폰 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/무선-이어폰-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/버터-추천">
-      <div class="card-title">버터 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/버터-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/벽걸이-시계-추천">
-      <div class="card-title">벽걸이 시계 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/벽걸이-시계-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/아이폰-추천">
-      <div class="card-title">아이폰 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/아이폰-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/우유-추천">
-      <div class="card-title">우유 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/우유-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/전자제품-엑세서리-추천">
-      <div class="card-title">전자제품 엑세서리 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/전자제품-엑세서리-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/주방용-칼-추천">
-      <div class="card-title">주방용 칼 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/주방용-칼-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-    <article class="card" data-link="/live/쿠팡-인기-제품-추천">
-      <div class="card-title">쿠팡 인기 제품 추천</div>
-      <span class="badge">자동 생성</span>
-      <div class="card-footer">
-        <span style="font-size:11px; color:#9ca3af;">/live/쿠팡-인기-제품-추천</span>
-        <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-      </div>
-    </article>
-
-  </main>
-
+  <div id="empty" class="empty" style="display:none;">
+    아직 등록된 추천 키워드가 없습니다. 관리자 페이지에서 키워드를 추가해 주세요.
+  </div>
 </body>
 
 </html>
