@@ -1,121 +1,190 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <title>icbhplus · 쿠팡 추천 리스트 자동 모음</title>
   <meta name="description" content="쿠팡 파트너스 API로 자동 생성되는 추천 상품 페이지 모음">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; margin:0; padding:32px; background:#020817; color:#e5e7eb; }
-    header.wrap { max-width:1080px; margin:0 auto 24px; }
-    .topbar { font-size:11px; color:#64748b; margin-bottom:4px; }
-    h1 { margin:0 0 8px; font-size:28px; }
-    p.sub { margin:0 0 24px; font-size:14px; color:#9ca3af; line-height:1.6; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; max-width:1080px; margin:0 auto; }
-    .card { background:#111827; border-radius:16px; padding:14px; border:1px solid rgba(148,163,253,0.16); box-shadow:0 16px 40px rgba(15,23,42,0.55); transition:all .18s ease; }
-    .card:hover { transform:translateY(-4px); box-shadow:0 24px 55px rgba(15,23,42,0.9); border-color:#38bdf8; }
-    .card-title { font-size:16px; margin:0 0 6px; color:#e5e7eb; }
-    .card-link { font-size:13px; color:#38bdf8; text-decoration:none; }
-    .badge { display:inline-block; margin-top:4px; padding:2px 8px; border-radius:999px; font-size:10px; background:rgba(56,189,248,0.12); color:#38bdf8; }
-    .empty { max-width:1080px; margin:40px auto; font-size:13px; color:#9ca3af; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      margin: 0;
+      padding: 32px;
+      background: #020817;
+      color: #e5e7eb;
+    }
+
+    header.wrap {
+      max-width: 1080px;
+      margin: 0 auto 24px;
+    }
+
+    .topbar {
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    p.sub {
+      margin: 0 0 24px;
+      font-size: 14px;
+      color: #9ca3af;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #111827;
+      border-radius: 16px;
+      padding: 14px;
+      border: 1px solid rgba(148, 163, 253, 0.16);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.55);
+      transition: all .18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 24px 55px rgba(15, 23, 42, 0.9);
+      border-color: #38bdf8;
+    }
+
+    .card-title {
+      font-size: 16px;
+      margin: 0 0 6px;
+      color: #e5e7eb;
+    }
+
+    .card-link {
+      font-size: 13px;
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+    }
+
+    .empty {
+      max-width: 1080px;
+      margin: 40px auto;
+      font-size: 13px;
+      color: #9ca3af;
+    }
   </style>
 </head>
+
 <body>
-<header class="wrap">
-  <div class="topbar">icbhplus · 자동화된 쿠팡 추천 포털</div>
-  <h1>자동 생성 추천 리스트</h1>
-  <p class="sub">
-    이 페이지는 관리자(당신)가 입력한 키워드를 기반으로 자동 생성된 쿠팡 추천 페이지 모음입니다.<br>
-    방문자는 아래 카드들을 통해 원하는 주제의 추천 상품을 확인할 수 있습니다.
-  </p>
-</header>
+  <header class="wrap">
+    <div class="topbar">icbhplus · 쿠팡 추천 포털</div>
+    <h1>쿠팡 추천 리스트</h1>
+  </header>
 
-<main class="grid">
+  <main class="grid">
 
-  <article class="card">
-    <div class="card-title">게이밍 마우스 추천</div>
-    <a class="card-link" href="posts/게이밍-마우스-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">게이밍 마우스 추천</div>
+      <a class="card-link" href="posts/게이밍-마우스-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">게이밍 키보드 추천</div>
-    <a class="card-link" href="posts/게이밍-키보드-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">게이밍 키보드 추천</div>
+      <a class="card-link" href="posts/게이밍-키보드-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">과일 추천</div>
-    <a class="card-link" href="posts/과일-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">과일 추천</div>
+      <a class="card-link" href="posts/과일-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">과자 추천</div>
-    <a class="card-link" href="posts/과자-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">과자 추천</div>
+      <a class="card-link" href="posts/과자-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">냉동식품 추천</div>
-    <a class="card-link" href="posts/냉동식품-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">냉동식품 추천</div>
+      <a class="card-link" href="posts/냉동식품-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">덴탈 마스크 추천</div>
-    <a class="card-link" href="posts/덴탈-마스크-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">덴탈 마스크 추천</div>
+      <a class="card-link" href="posts/덴탈-마스크-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">무선 이어폰 추천</div>
-    <a class="card-link" href="posts/무선-이어폰-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">무선 이어폰 추천</div>
+      <a class="card-link" href="posts/무선-이어폰-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">버터 추천</div>
-    <a class="card-link" href="posts/버터-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">버터 추천</div>
+      <a class="card-link" href="posts/버터-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">벽걸이 시계 추천</div>
-    <a class="card-link" href="posts/벽걸이-시계-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">벽걸이 시계 추천</div>
+      <a class="card-link" href="posts/벽걸이-시계-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">아이폰 추천</div>
-    <a class="card-link" href="posts/아이폰-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">아이폰 추천</div>
+      <a class="card-link" href="posts/아이폰-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">우유 추천</div>
-    <a class="card-link" href="posts/우유-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">우유 추천</div>
+      <a class="card-link" href="posts/우유-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">전자제품 엑세서리 추천</div>
-    <a class="card-link" href="posts/전자제품-엑세서리-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">전자제품 엑세서리 추천</div>
+      <a class="card-link" href="posts/전자제품-엑세서리-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">주방용 칼 추천</div>
-    <a class="card-link" href="posts/주방용-칼-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">주방용 칼 추천</div>
+      <a class="card-link" href="posts/주방용-칼-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-  <article class="card">
-    <div class="card-title">쿠팡 인기 제품 추천</div>
-    <a class="card-link" href="posts/쿠팡-인기-제품-추천.html">바로 보기 →</a>
-    <div class="badge">자동 생성</div>
-  </article>
+    <article class="card">
+      <div class="card-title">쿠팡 인기 제품 추천</div>
+      <a class="card-link" href="posts/쿠팡-인기-제품-추천.html">바로 보기 →</a>
+      <div class="badge">자동 생성</div>
+    </article>
 
-</main>
+  </main>
 </body>
+
 </html>
