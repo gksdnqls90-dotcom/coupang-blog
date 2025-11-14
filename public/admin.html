@@ -16,22 +16,38 @@
         }
 
         .wrap {
-            max-width: 960px;
+            max-width: 1080px;
             margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         h1 {
             font-size: 24px;
-            margin-bottom: 4px;
+            margin: 0 0 4px;
         }
 
         .sub {
             font-size: 13px;
             color: #9ca3af;
-            margin-bottom: 18px;
         }
 
-        .card {
+        a.back-link {
+            font-size: 12px;
+            color: #38bdf8;
+            text-decoration: none;
+        }
+
+        a.back-link:hover {
+            text-decoration: underline;
+        }
+
+        .card-panel {
             background: #111827;
             border-radius: 12px;
             padding: 18px;
@@ -46,8 +62,7 @@
             margin-bottom: 6px;
         }
 
-        input[type="password"],
-        input[type="text"] {
+        input[type="password"] {
             width: 100%;
             box-sizing: border-box;
             padding: 8px 10px;
@@ -72,123 +87,179 @@
             background: #0369a1;
         }
 
-        .keyword-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
+        .small {
+            font-size: 12px;
+            color: #9ca3af;
             margin-top: 8px;
         }
 
-        .keyword-table th,
-        .keyword-table td {
-            border-bottom: 1px solid #1f2937;
-            padding: 6px 4px;
+        /* 인덱스랑 비슷한 카드 스타일 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 8px;
+        }
+
+        .card {
+            background: #020617;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(148, 163, 253, 0.3);
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.75);
+            transition: all 0.18s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 22px 50px rgba(15, 23, 42, 0.95);
+            border-color: #38bdf8;
+        }
+
+        .card-title {
+            font-size: 16px;
+            margin: 0;
+            color: #e5e7eb;
         }
 
         .badge {
             display: inline-block;
             padding: 2px 8px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 10px;
             background: rgba(56, 189, 248, 0.15);
             color: #38bdf8;
+            width: fit-content;
         }
 
-        .small {
-            font-size: 12px;
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+            gap: 4px;
+        }
+
+        .url-text {
+            font-size: 11px;
             color: #9ca3af;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .mt8 {
-            margin-top: 8px;
+        .delete-btn {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid #f97373;
+            background: #450a0a;
+            color: #fecaca;
+            cursor: pointer;
+            flex-shrink: 0;
         }
 
-        .mt12 {
-            margin-top: 12px;
+        .delete-btn:hover {
+            background: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .tag-admin {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            margin-left: 4px;
         }
     </style>
 </head>
 
 <body>
     <div class="wrap">
-        <h1>icbhplus 관리자</h1>
-        <div class="sub">
-            인덱스에 노출할 키워드를 관리하는 페이지입니다.<br>
-            여기서 키워드를 추가/삭제하고, 필요하면 인덱스 HTML도 함께 수정해 주세요.
-        </div>
+        <header>
+            <div>
+                <h1>icbhplus 관리자</h1>
+                <div class="sub">
+                    인덱스에 노출 중인 추천 리스트를 한눈에 보고, <br>
+                    여기서만 삭제(숨기기) 테스트를 할 수 있는 페이지입니다.
+                </div>
+            </div>
+            <div>
+                <a href="index.html" class="back-link">← 메인으로 이동</a>
+            </div>
+        </header>
 
         <!-- 로그인 섹션 -->
-        <div id="login-section" class="card">
+        <section id="login-section" class="card-panel">
             <label for="adminPw">관리자 비밀번호</label>
             <input id="adminPw" type="password" placeholder="비밀번호를 입력하세요">
-            <div class="mt8">
+            <div style="margin-top:8px;">
                 <button id="loginBtn">로그인</button>
             </div>
-            <div class="small mt8">
-                * 간단한 보호용 비밀번호입니다. 코드에 그대로 들어가므로 외부 공유는 피해주세요.
+            <div class="small">
+                * 간단 보호용 비밀번호입니다. 코드에 그대로 들어가므로 외부 공유는 피해주세요.<br>
+                * 요청하신 비밀번호는 <b>1938</b>로 설정되어 있습니다.
             </div>
-        </div>
+        </section>
 
-        <!-- 실제 관리자 패널 -->
-        <div id="admin-section" style="display:none;">
-            <!-- 키워드 추가 -->
-            <div class="card">
+        <!-- 관리자 카드 리스트 섹션 -->
+        <section id="admin-section" style="display:none;">
+            <div class="card-panel">
                 <h2 style="font-size:18px; margin:0 0 8px;">
-                    키워드 추가 <span class="badge">추가</span>
+                    추천 리스트 관리
+                    <span class="tag-admin">관리자 전용</span>
                 </h2>
-                <label for="keywordInput" class="mt8">키워드 (예: 무선 이어폰 추천)</label>
-                <input id="keywordInput" type="text" placeholder="키워드를 입력하세요">
-
-                <div class="mt12">
-                    <button id="addKeywordBtn">키워드 추가</button>
+                <div class="small" style="margin-bottom:10px;">
+                    아래 박스들은 인덱스에 노출되는 추천 키워드들과 동일합니다.<br>
+                    이 화면에서 <b>삭제</b>를 누르면 <b>관리자 화면에서는 카드가 사라지지만,</b><br>
+                    실제 index.html은 자동으로 수정되지 않습니다. (나중에 서버 자동화에서 연동 가능)
                 </div>
 
-                <div class="small mt8">
-                    * 키워드는 브라우저 localStorage에 저장됩니다.<br>
-                    * slug는 띄어쓰기를 - 로 바꾼 값으로 자동 생성됩니다. (예: 무선 이어폰 추천 → 무선-이어폰-추천)
+                <div class="grid" id="cardGrid">
+                    <!-- 카드들 JS에서 렌더링 -->
                 </div>
             </div>
-
-            <!-- 키워드 목록 -->
-            <div class="card">
-                <h2 style="font-size:18px; margin:0 0 8px;">
-                    키워드 목록 <span class="badge">관리</span>
-                </h2>
-
-                <table class="keyword-table">
-                    <thead>
-                        <tr>
-                            <th style="width:30%;">키워드</th>
-                            <th style="width:30%;">슬러그(slug)</th>
-                            <th style="width:30%;">URL</th>
-                            <th style="width:10%;">삭제</th>
-                        </tr>
-                    </thead>
-                    <tbody id="keywordTbody">
-                        <!-- JS로 렌더링 -->
-                    </tbody>
-                </table>
-
-                <div class="small mt8">
-                    * URL은 /live/slug 형태입니다. 인덱스 HTML의 data-link와 맞춰주세요.<br>
-                    * 여기서 삭제해도 인덱스 HTML은 자동으로 지워지지 않으니, 추후 자동화 전까지는 수동으로 맞춰 주세요.
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
 
     <script>
-        // ★ 관리자 비밀번호 설정
-        const ADMIN_PASSWORD = "icbh-admin-1234";
+        // ★ 관리자 비밀번호 (요청: 1938)
+        const ADMIN_PASSWORD = "1938";
 
         const loginSection = document.getElementById("login-section");
         const adminSection = document.getElementById("admin-section");
-        const loginBtn = document.getElementById("loginBtn");
         const adminPwInput = document.getElementById("adminPw");
+        const loginBtn = document.getElementById("loginBtn");
+        const cardGrid = document.getElementById("cardGrid");
 
+        // 인덱스와 동일한 키워드/슬러그 목록 (여기서 한 번 정의)
+        const posts = [
+            { title: "게이밍 마우스 추천", slug: "게이밍-마우스-추천" },
+            { title: "게이밍 키보드 추천", slug: "게이밍-키보드-추천" },
+            { title: "과일 추천", slug: "과일-추천" },
+            { title: "과자 추천", slug: "과자-추천" },
+            { title: "냉동식품 추천", slug: "냉동식품-추천" },
+            { title: "덴탈 마스크 추천", slug: "덴탈-마스크-추천" },
+            { title: "무선 이어폰 추천", slug: "무선-이어폰-추천" },
+            { title: "버터 추천", slug: "버터-추천" },
+            { title: "벽걸이 시계 추천", slug: "벽걸이-시계-추천" },
+            { title: "아이폰 추천", slug: "아이폰-추천" },
+            { title: "우유 추천", slug: "우유-추천" },
+            { title: "전자제품 엑세서리 추천", slug: "전자제품-엑세서리-추천" },
+            { title: "주방용 칼 추천", slug: "주방용-칼-추천" },
+            { title: "쿠팡 인기 제품 추천", slug: "쿠팡-인기-제품-추천" },
+        ];
+
+        // 로그인 로직
         loginBtn.addEventListener("click", () => {
-            const pw = adminPwInput.value.trim();
-            if (pw === ADMIN_PASSWORD) {
+            const value = adminPwInput.value.trim();
+            if (value === ADMIN_PASSWORD) {
                 loginSection.style.display = "none";
                 adminSection.style.display = "block";
             } else {
@@ -196,83 +267,54 @@
             }
         });
 
-        // localStorage 키워드 관리
-        const STORAGE_KEY = "icbh_keywords";
-        const keywordInput = document.getElementById("keywordInput");
-        const addKeywordBtn = document.getElementById("addKeywordBtn");
-        const keywordTbody = document.getElementById("keywordTbody");
+        // 카드 렌더링
+        function renderCards() {
+            cardGrid.innerHTML = "";
+            posts.forEach((post, index) => {
+                const card = document.createElement("article");
+                card.className = "card";
+                card.dataset.link = `/live/${post.slug}`;
 
-        function loadKeywords() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                return raw ? JSON.parse(raw) : [];
-            } catch (e) {
-                console.error(e);
-                return [];
-            }
-        }
+                card.innerHTML = `
+          <div class="card-title">${post.title}</div>
+          <span class="badge">자동 생성</span>
+          <div class="card-footer">
+            <span class="url-text">/live/${post.slug}</span>
+            <button class="delete-btn" data-index="${index}">삭제</button>
+          </div>
+        `;
 
-        function saveKeywords(list) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-        }
-
-        function renderKeywords() {
-            const list = loadKeywords();
-            keywordTbody.innerHTML = "";
-
-            list.forEach((item, idx) => {
-                const tr = document.createElement("tr");
-
-                const tdKeyword = document.createElement("td");
-                tdKeyword.textContent = item.keyword;
-
-                const tdSlug = document.createElement("td");
-                tdSlug.textContent = item.slug;
-
-                const tdUrl = document.createElement("td");
-                const urlSpan = document.createElement("span");
-                urlSpan.textContent = `/live/${item.slug}`;
-                tdUrl.appendChild(urlSpan);
-
-                const tdAction = document.createElement("td");
-                const delBtn = document.createElement("button");
-                delBtn.textContent = "삭제";
-                delBtn.style.fontSize = "11px";
-                delBtn.addEventListener("click", () => {
-                    const updated = loadKeywords();
-                    updated.splice(idx, 1);
-                    saveKeywords(updated);
-                    renderKeywords();
+                // 카드 클릭 시 /live/slug 이동 (삭제 버튼 제외)
+                card.addEventListener("click", (e) => {
+                    if (e.target.closest(".delete-btn")) return;
+                    const link = card.dataset.link;
+                    if (link) window.open(link, "_blank");
                 });
-                tdAction.appendChild(delBtn);
 
-                tr.appendChild(tdKeyword);
-                tr.appendChild(tdSlug);
-                tr.appendChild(tdUrl);
-                tr.appendChild(tdAction);
+                cardGrid.appendChild(card);
+            });
 
-                keywordTbody.appendChild(tr);
+            // 삭제 버튼 핸들러
+            document.querySelectorAll(".delete-btn").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(btn.dataset.index, 10);
+                    const target = posts[idx];
+
+                    const ok = confirm(
+                        `"${target.title}" 카드를 관리자 화면에서 삭제하시겠습니까?\n\n※ 주의: index.html 파일은 자동으로 수정되지 않습니다.`
+                    );
+                    if (!ok) return;
+
+                    // 화면에서만 제거 (posts 배열 수정 + 재렌더)
+                    posts.splice(idx, 1);
+                    renderCards();
+                });
             });
         }
 
-        addKeywordBtn.addEventListener("click", () => {
-            const keyword = keywordInput.value.trim();
-            if (!keyword) {
-                alert("키워드를 입력해주세요.");
-                return;
-            }
-            const slug = encodeURIComponent(keyword.replace(/\s+/g, "-"));
-
-            const list = loadKeywords();
-            list.push({ keyword, slug });
-            saveKeywords(list);
-
-            keywordInput.value = "";
-            renderKeywords();
-        });
-
-        // 초기 렌더 (비밀번호 풀기 전에도 내부 데이터는 준비해둠)
-        renderKeywords();
+        // 초기 렌더 (로그인 전이라도 준비)
+        renderCards();
     </script>
 </body>
 
