@@ -3,70 +3,299 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>icbhplus 관리자 패널 (임시)</title>
+    <title>icbhplus · 관리자</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex,nofollow">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            margin: 0;
+            padding: 24px;
             background: #020817;
             color: #e5e7eb;
-            margin: 0;
-            padding: 32px;
         }
 
         .wrap {
-            max-width: 640px;
+            max-width: 960px;
             margin: 0 auto;
         }
 
         h1 {
-            font-size: 22px;
-            margin-bottom: 8px;
+            font-size: 24px;
+            margin-bottom: 4px;
         }
 
-        p {
+        .sub {
             font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: #111827;
+            border-radius: 12px;
+            padding: 18px;
+            border: 1px solid rgba(148, 163, 253, 0.2);
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.6);
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 13px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input[type="password"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 13px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        button {
+            padding: 7px 14px;
+            border-radius: 999px;
+            border: 1px solid #38bdf8;
+            background: #0f172a;
+            color: #e5e7eb;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0369a1;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .keyword-list {
+            font-size: 13px;
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .keyword-list th,
+        .keyword-list td {
+            border-bottom: 1px solid #1f2937;
+            padding: 6px 4px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+        }
+
+        .small {
+            font-size: 12px;
             color: #9ca3af;
         }
 
-        code {
-            background: #111827;
-            padding: 3px 6px;
-            border-radius: 6px;
-            font-size: 12px;
+        .mt8 {
+            margin-top: 8px;
         }
 
-        li {
-            margin-bottom: 6px;
+        .mt12 {
+            margin-top: 12px;
+        }
+
+        .danger {
+            color: #f97373;
         }
     </style>
 </head>
 
 <body>
     <div class="wrap">
-        <h1>icbhplus 관리자 패널 (1단계)</h1>
-        <p>※ 이 페이지는 검색엔진에서 제외되며, 운영자만 보는 용도입니다.</p>
+        <h1>icbhplus 관리자</h1>
+        <div class="sub">
+            비밀번호로 관리자 모드에 들어가서 키워드를 메모하고,<br>
+            필요한 시점에 PC에서 <span class="badge">bulkGenerate.js</span>를 실행하는 용도로 사용합니다.<br>
+            (추후 Netlify Functions를 붙이면 여기서 바로 HTML 생성까지 자동화 가능)
+        </div>
 
-        <h2>콘텐츠 생성 방법</h2>
-        <ol>
-            <li>서버/PC에서 프로젝트 폴더로 이동:
-                <div><code>cd COUPANG-BLOG</code></div>
-            </li>
-            <li>단일 키워드 생성:
-                <div><code>node generatePost.js "공기청정기 추천"</code></div>
-            </li>
-            <li>여러 키워드 한 번에:
-                <div><code>node bulkGenerate.js</code></div>
-            </li>
-            <li>명령 실행 후:
-                <div><code>git add public && git commit -m "update" && git push</code></div>
-            </li>
-            <li>푸시가 완료되면 Netlify가 자동 배포 → <code>icbhplus.com</code>에서 새 페이지를 확인합니다.</li>
-        </ol>
+        <!-- 로그인 박스 -->
+        <div id="login-section" class="card">
+            <label for="admin-password">관리자 비밀번호</label>
+            <input id="admin-password" type="password" placeholder="관리자 비밀번호를 입력하세요">
+            <div class="mt8">
+                <button id="login-btn">로그인</button>
+            </div>
+            <div class="small mt8">
+                ※ 이 비밀번호는 프론트 코드에 그대로 들어가므로 <span class="danger">완전한 보안용이 아닙니다.</span><br>
+                &nbsp;&nbsp;아는 사람만 쓰는 간단 보호용이라고 생각하고 사용해주세요.
+            </div>
+        </div>
 
-        <p>다음 단계: 이 페이지에서 바로 키워드를 입력해 생성 버튼을 누를 수 있도록 Netlify Functions와 연동할 수 있습니다. 그건 나중에 토큰/보안 세팅 완료 후 붙이면 됩니다.</p>
+        <!-- 실제 관리자 화면 -->
+        <div id="app-section" style="display:none;">
+            <!-- 키워드 추가 -->
+            <div class="card">
+                <div class="flex-between">
+                    <h2 style="font-size:18px; margin:0;">키워드 추가</h2>
+                    <span class="badge">STEP 1</span>
+                </div>
+                <div class="mt8">
+                    <label for="keyword-input">키워드 (예: 공기청정기 추천)</label>
+                    <input id="keyword-input" type="text" placeholder="키워드를 한 개씩 입력하세요">
+                </div>
+                <div class="mt8">
+                    <label for="memo-input">메모 / 노트 (선택)</label>
+                    <textarea id="memo-input" placeholder="이 키워드에 대한 간단한 메모를 남길 수 있습니다."></textarea>
+                </div>
+                <div class="mt12">
+                    <button id="add-keyword-btn">키워드 저장 (브라우저에 보관)</button>
+                </div>
+                <div class="small mt8">
+                    키워드는 브라우저 <span class="badge">localStorage</span>에만 저장됩니다.<br>
+                    다른 PC/브라우저에서는 목록이 보이지 않습니다.
+                </div>
+            </div>
+
+            <!-- 키워드 목록 -->
+            <div class="card">
+                <div class="flex-between">
+                    <h2 style="font-size:18px; margin:0;">키워드 목록</h2>
+                    <span class="badge">STEP 2</span>
+                </div>
+                <table class="keyword-list" id="keyword-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30%;">키워드</th>
+                            <th style="width:40%;">메모</th>
+                            <th style="width:30%;">CMD 실행 예시</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="keyword-tbody">
+                        <!-- JS에서 채움 -->
+                    </tbody>
+                </table>
+                <div class="small mt8">
+                    CMD 예시를 복사해서 로컬 PC 터미널에서 실행하면, 기존처럼 <br>
+                    <code>bulkGenerate.js</code>를 이용해 HTML을 생성할 수 있습니다.
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // ⚙️ 관리자 비밀번호 설정 (원하는 값으로 바꿔서 사용)
+        const ADMIN_PASSWORD = "1938";
+
+        const loginSection = document.getElementById("login-section");
+        const appSection = document.getElementById("app-section");
+        const loginBtn = document.getElementById("login-btn");
+        const passwordInput = document.getElementById("admin-password");
+
+        loginBtn.addEventListener("click", () => {
+            const pw = passwordInput.value.trim();
+            if (pw === ADMIN_PASSWORD) {
+                loginSection.style.display = "none";
+                appSection.style.display = "block";
+            } else {
+                alert("비밀번호가 올바르지 않습니다.");
+            }
+        });
+
+        // 키워드 관리 (localStorage)
+        const STORAGE_KEY = "icbh_keywords";
+        const keywordInput = document.getElementById("keyword-input");
+        const memoInput = document.getElementById("memo-input");
+        const addBtn = document.getElementById("add-keyword-btn");
+        const tbody = document.getElementById("keyword-tbody");
+
+        function loadKeywords() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
+        }
+
+        function saveKeywords(list) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        }
+
+        function renderKeywords() {
+            const list = loadKeywords();
+            tbody.innerHTML = "";
+            list.forEach((item, index) => {
+                const tr = document.createElement("tr");
+
+                const tdKeyword = document.createElement("td");
+                tdKeyword.textContent = item.keyword;
+
+                const tdMemo = document.createElement("td");
+                tdMemo.textContent = item.memo || "-";
+
+                const tdCmd = document.createElement("td");
+                tdCmd.innerHTML = `<code>node bulkGenerate.js "${item.keyword}"</code>`;
+                tdCmd.style.fontSize = "11px";
+
+                const tdAction = document.createElement("td");
+                const delBtn = document.createElement("button");
+                delBtn.textContent = "삭제";
+                delBtn.style.fontSize = "11px";
+                delBtn.addEventListener("click", () => {
+                    const list = loadKeywords();
+                    list.splice(index, 1);
+                    saveKeywords(list);
+                    renderKeywords();
+                });
+                tdAction.appendChild(delBtn);
+
+                tr.appendChild(tdKeyword);
+                tr.appendChild(tdMemo);
+                tr.appendChild(tdCmd);
+                tr.appendChild(tdAction);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        addBtn.addEventListener("click", () => {
+            const keyword = keywordInput.value.trim();
+            const memo = memoInput.value.trim();
+
+            if (!keyword) {
+                alert("키워드를 입력해주세요.");
+                return;
+            }
+
+            const list = loadKeywords();
+            list.push({ keyword, memo });
+            saveKeywords(list);
+            keywordInput.value = "";
+            memoInput.value = "";
+            renderKeywords();
+        });
+
+        // 초기 렌더
+        renderKeywords();
+    </script>
 </body>
 
 </html>

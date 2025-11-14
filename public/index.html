@@ -6,6 +6,7 @@
   <title>icbhplus · 쿠팡 추천 리스트 자동 모음</title>
   <meta name="description" content="쿠팡 파트너스 API로 자동 생성되는 추천 상품 페이지 모음">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -18,6 +19,9 @@
     header.wrap {
       max-width: 1080px;
       margin: 0 auto 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .topbar {
@@ -31,6 +35,22 @@
       font-size: 28px;
     }
 
+    .admin-btn {
+      padding: 8px 14px;
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #38bdf8;
+      border-radius: 8px;
+      font-size: 13px;
+      text-decoration: none;
+      transition: all .18s ease;
+    }
+
+    .admin-btn:hover {
+      background: #38bdf8;
+      color: #020817;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -42,12 +62,11 @@
     .card {
       background: #111827;
       border-radius: 16px;
-      padding: 14px;
+      padding: 16px;
       border: 1px solid rgba(148, 163, 253, 0.16);
       box-shadow: 0 16px 40px rgba(15, 23, 42, 0.55);
-      transition: all .18s ease;
+      transition: all 0.18s ease;
       cursor: pointer;
-      /* 👈 카드 전체 클릭 가능하게 시각 처리 */
     }
 
     .card:hover {
@@ -57,144 +76,118 @@
     }
 
     .card-title {
-      font-size: 16px;
+      font-size: 17px;
       margin: 0 0 6px;
       color: #e5e7eb;
     }
 
-    .card-link {
-      font-size: 13px;
-      color: #38bdf8;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
     .badge {
       display: inline-block;
-      margin-top: 4px;
+      margin-top: 6px;
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 10px;
       background: rgba(56, 189, 248, 0.12);
       color: #38bdf8;
-      cursor: default;
-      /* 배지 클릭 시 이동 방지 */
     }
   </style>
+
+  <script>
+    // 카드 전체 클릭 → 내부 링크로 이동
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".card").forEach(card => {
+        card.addEventListener("click", () => {
+          const link = card.getAttribute("data-link");
+          if (link) window.location.href = link;
+        });
+      });
+    });
+  </script>
 </head>
 
 <body>
+
   <header class="wrap">
-    <div class="topbar">icbhplus · 쿠팡 추천 포털</div>
-    <h1>쿠팡 추천 리스트</h1>
+    <div>
+      <div class="topbar">icbhplus · 쿠팡 추천 포털</div>
+      <h1>쿠팡 추천 리스트</h1>
+    </div>
+    <a href="admin.html" class="admin-btn">관리자 페이지</a>
   </header>
 
   <main class="grid">
 
-    <!-- 카드들 (그대로) -->
-    <article class="card">
+    <article class="card" data-link="/live/게이밍-마우스-추천">
       <div class="card-title">게이밍 마우스 추천</div>
-      <a class="card-link" href="posts/게이밍-마우스-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/게이밍-키보드-추천">
       <div class="card-title">게이밍 키보드 추천</div>
-      <a class="card-link" href="posts/게이밍-키보드-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/과일-추천">
       <div class="card-title">과일 추천</div>
-      <a class="card-link" href="posts/과일-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/과자-추천">
       <div class="card-title">과자 추천</div>
-      <a class="card-link" href="posts/과자-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/냉동식품-추천">
       <div class="card-title">냉동식품 추천</div>
-      <a class="card-link" href="posts/냉동식품-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/덴탈-마스크-추천">
       <div class="card-title">덴탈 마스크 추천</div>
-      <a class="card-link" href="posts/덴탈-마스크-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/무선-이어폰-추천">
       <div class="card-title">무선 이어폰 추천</div>
-      <a class="card-link" href="posts/무선-이어폰-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/버터-추천">
       <div class="card-title">버터 추천</div>
-      <a class="card-link" href="posts/버터-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/벽걸이-시계-추천">
       <div class="card-title">벽걸이 시계 추천</div>
-      <a class="card-link" href="posts/벽걸이-시계-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/아이폰-추천">
       <div class="card-title">아이폰 추천</div>
-      <a class="card-link" href="posts/아이폰-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/우유-추천">
       <div class="card-title">우유 추천</div>
-      <a class="card-link" href="posts/우유-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/전자제품-엑세서리-추천">
       <div class="card-title">전자제품 엑세서리 추천</div>
-      <a class="card-link" href="posts/전자제품-엑세서리-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/주방용-칼-추천">
       <div class="card-title">주방용 칼 추천</div>
-      <a class="card-link" href="posts/주방용-칼-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
-    <article class="card">
+    <article class="card" data-link="/live/쿠팡-인기-제품-추천">
       <div class="card-title">쿠팡 인기 제품 추천</div>
-      <a class="card-link" href="posts/쿠팡-인기-제품-추천.html">바로 보기 →</a>
       <div class="badge">자동 생성</div>
     </article>
 
   </main>
-
-  <!-- 👇 카드 전체 클릭 스크립트 추가 -->
-  <script>
-    document.querySelectorAll('.card').forEach(card => {
-      const link = card.querySelector('.card-link');
-
-      card.addEventListener('click', (event) => {
-        // 카드 안의 a 링크 눌렀을 때는 기본 동작 유지
-        if (event.target.closest('.card-link')) return;
-
-        // 배지 클릭 시 이동하지 않음
-        if (event.target.closest('.badge')) return;
-
-        // 카드 전체 클릭 → 링크 이동
-        window.location.href = link.href;
-      });
-    });
-  </script>
 
 </body>
 

@@ -3,6 +3,6 @@
   functions = "netlify/functions"
 
 [[redirects]]
-  from = "/admin"
-  to = "/admin.html"
+  from = "/live/:slug"
+  to = "/.netlify/functions/livePost?slug=:slug"
   status = 200
