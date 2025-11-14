@@ -2,7 +2,7 @@
 const path = require("path");
 
 // 루트에 있는 CoupangPartners.js 재사용
-const CoupangPartners = require("../CoupangPartners");
+const CoupangPartners = require('../../CoupangPartners');
 
 // 간단한 HTML 템플릿 함수
 function renderHtml(keyword, products) {
