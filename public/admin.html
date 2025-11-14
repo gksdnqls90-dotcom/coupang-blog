@@ -3,8 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>icbhplus · 관리자</title>
+    <title>icbhplus · 관리자 페이지</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -27,7 +28,7 @@
         .sub {
             font-size: 13px;
             color: #9ca3af;
-            margin-bottom: 24px;
+            margin-bottom: 18px;
         }
 
         .card {
@@ -46,8 +47,7 @@
         }
 
         input[type="password"],
-        input[type="text"],
-        textarea {
+        input[type="text"] {
             width: 100%;
             box-sizing: border-box;
             padding: 8px 10px;
@@ -56,11 +56,6 @@
             background: #020617;
             color: #e5e7eb;
             font-size: 13px;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 60px;
         }
 
         button {
@@ -77,22 +72,15 @@
             background: #0369a1;
         }
 
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .keyword-list {
-            font-size: 13px;
-            border-collapse: collapse;
+        .keyword-table {
             width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
             margin-top: 8px;
         }
 
-        .keyword-list th,
-        .keyword-list td {
+        .keyword-table th,
+        .keyword-table td {
             border-bottom: 1px solid #1f2937;
             padding: 6px 4px;
         }
@@ -118,10 +106,6 @@
         .mt12 {
             margin-top: 12px;
         }
-
-        .danger {
-            color: #f97373;
-        }
     </style>
 </head>
 
@@ -129,101 +113,94 @@
     <div class="wrap">
         <h1>icbhplus 관리자</h1>
         <div class="sub">
-            비밀번호로 관리자 모드에 들어가서 키워드를 메모하고,<br>
-            필요한 시점에 PC에서 <span class="badge">bulkGenerate.js</span>를 실행하는 용도로 사용합니다.<br>
-            (추후 Netlify Functions를 붙이면 여기서 바로 HTML 생성까지 자동화 가능)
+            인덱스에 노출할 키워드를 관리하는 페이지입니다.<br>
+            여기서 키워드를 추가/삭제하고, 필요하면 인덱스 HTML도 함께 수정해 주세요.
         </div>
 
-        <!-- 로그인 박스 -->
+        <!-- 로그인 섹션 -->
         <div id="login-section" class="card">
-            <label for="admin-password">관리자 비밀번호</label>
-            <input id="admin-password" type="password" placeholder="관리자 비밀번호를 입력하세요">
+            <label for="adminPw">관리자 비밀번호</label>
+            <input id="adminPw" type="password" placeholder="비밀번호를 입력하세요">
             <div class="mt8">
-                <button id="login-btn">로그인</button>
+                <button id="loginBtn">로그인</button>
             </div>
             <div class="small mt8">
-                ※ 이 비밀번호는 프론트 코드에 그대로 들어가므로 <span class="danger">완전한 보안용이 아닙니다.</span><br>
-                &nbsp;&nbsp;아는 사람만 쓰는 간단 보호용이라고 생각하고 사용해주세요.
+                * 간단한 보호용 비밀번호입니다. 코드에 그대로 들어가므로 외부 공유는 피해주세요.
             </div>
         </div>
 
-        <!-- 실제 관리자 화면 -->
-        <div id="app-section" style="display:none;">
+        <!-- 실제 관리자 패널 -->
+        <div id="admin-section" style="display:none;">
             <!-- 키워드 추가 -->
             <div class="card">
-                <div class="flex-between">
-                    <h2 style="font-size:18px; margin:0;">키워드 추가</h2>
-                    <span class="badge">STEP 1</span>
-                </div>
-                <div class="mt8">
-                    <label for="keyword-input">키워드 (예: 공기청정기 추천)</label>
-                    <input id="keyword-input" type="text" placeholder="키워드를 한 개씩 입력하세요">
-                </div>
-                <div class="mt8">
-                    <label for="memo-input">메모 / 노트 (선택)</label>
-                    <textarea id="memo-input" placeholder="이 키워드에 대한 간단한 메모를 남길 수 있습니다."></textarea>
-                </div>
+                <h2 style="font-size:18px; margin:0 0 8px;">
+                    키워드 추가 <span class="badge">추가</span>
+                </h2>
+                <label for="keywordInput" class="mt8">키워드 (예: 무선 이어폰 추천)</label>
+                <input id="keywordInput" type="text" placeholder="키워드를 입력하세요">
+
                 <div class="mt12">
-                    <button id="add-keyword-btn">키워드 저장 (브라우저에 보관)</button>
+                    <button id="addKeywordBtn">키워드 추가</button>
                 </div>
+
                 <div class="small mt8">
-                    키워드는 브라우저 <span class="badge">localStorage</span>에만 저장됩니다.<br>
-                    다른 PC/브라우저에서는 목록이 보이지 않습니다.
+                    * 키워드는 브라우저 localStorage에 저장됩니다.<br>
+                    * slug는 띄어쓰기를 - 로 바꾼 값으로 자동 생성됩니다. (예: 무선 이어폰 추천 → 무선-이어폰-추천)
                 </div>
             </div>
 
             <!-- 키워드 목록 -->
             <div class="card">
-                <div class="flex-between">
-                    <h2 style="font-size:18px; margin:0;">키워드 목록</h2>
-                    <span class="badge">STEP 2</span>
-                </div>
-                <table class="keyword-list" id="keyword-table">
+                <h2 style="font-size:18px; margin:0 0 8px;">
+                    키워드 목록 <span class="badge">관리</span>
+                </h2>
+
+                <table class="keyword-table">
                     <thead>
                         <tr>
                             <th style="width:30%;">키워드</th>
-                            <th style="width:40%;">메모</th>
-                            <th style="width:30%;">CMD 실행 예시</th>
-                            <th></th>
+                            <th style="width:30%;">슬러그(slug)</th>
+                            <th style="width:30%;">URL</th>
+                            <th style="width:10%;">삭제</th>
                         </tr>
                     </thead>
-                    <tbody id="keyword-tbody">
-                        <!-- JS에서 채움 -->
+                    <tbody id="keywordTbody">
+                        <!-- JS로 렌더링 -->
                     </tbody>
                 </table>
+
                 <div class="small mt8">
-                    CMD 예시를 복사해서 로컬 PC 터미널에서 실행하면, 기존처럼 <br>
-                    <code>bulkGenerate.js</code>를 이용해 HTML을 생성할 수 있습니다.
+                    * URL은 /live/slug 형태입니다. 인덱스 HTML의 data-link와 맞춰주세요.<br>
+                    * 여기서 삭제해도 인덱스 HTML은 자동으로 지워지지 않으니, 추후 자동화 전까지는 수동으로 맞춰 주세요.
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ⚙️ 관리자 비밀번호 설정 (원하는 값으로 바꿔서 사용)
-        const ADMIN_PASSWORD = "1938";
+        // ★ 관리자 비밀번호 설정
+        const ADMIN_PASSWORD = "icbh-admin-1234";
 
         const loginSection = document.getElementById("login-section");
-        const appSection = document.getElementById("app-section");
-        const loginBtn = document.getElementById("login-btn");
-        const passwordInput = document.getElementById("admin-password");
+        const adminSection = document.getElementById("admin-section");
+        const loginBtn = document.getElementById("loginBtn");
+        const adminPwInput = document.getElementById("adminPw");
 
         loginBtn.addEventListener("click", () => {
-            const pw = passwordInput.value.trim();
+            const pw = adminPwInput.value.trim();
             if (pw === ADMIN_PASSWORD) {
                 loginSection.style.display = "none";
-                appSection.style.display = "block";
+                adminSection.style.display = "block";
             } else {
                 alert("비밀번호가 올바르지 않습니다.");
             }
         });
 
-        // 키워드 관리 (localStorage)
+        // localStorage 키워드 관리
         const STORAGE_KEY = "icbh_keywords";
-        const keywordInput = document.getElementById("keyword-input");
-        const memoInput = document.getElementById("memo-input");
-        const addBtn = document.getElementById("add-keyword-btn");
-        const tbody = document.getElementById("keyword-tbody");
+        const keywordInput = document.getElementById("keywordInput");
+        const addKeywordBtn = document.getElementById("addKeywordBtn");
+        const keywordTbody = document.getElementById("keywordTbody");
 
         function loadKeywords() {
             try {
@@ -241,59 +218,60 @@
 
         function renderKeywords() {
             const list = loadKeywords();
-            tbody.innerHTML = "";
-            list.forEach((item, index) => {
+            keywordTbody.innerHTML = "";
+
+            list.forEach((item, idx) => {
                 const tr = document.createElement("tr");
 
                 const tdKeyword = document.createElement("td");
                 tdKeyword.textContent = item.keyword;
 
-                const tdMemo = document.createElement("td");
-                tdMemo.textContent = item.memo || "-";
+                const tdSlug = document.createElement("td");
+                tdSlug.textContent = item.slug;
 
-                const tdCmd = document.createElement("td");
-                tdCmd.innerHTML = `<code>node bulkGenerate.js "${item.keyword}"</code>`;
-                tdCmd.style.fontSize = "11px";
+                const tdUrl = document.createElement("td");
+                const urlSpan = document.createElement("span");
+                urlSpan.textContent = `/live/${item.slug}`;
+                tdUrl.appendChild(urlSpan);
 
                 const tdAction = document.createElement("td");
                 const delBtn = document.createElement("button");
                 delBtn.textContent = "삭제";
                 delBtn.style.fontSize = "11px";
                 delBtn.addEventListener("click", () => {
-                    const list = loadKeywords();
-                    list.splice(index, 1);
-                    saveKeywords(list);
+                    const updated = loadKeywords();
+                    updated.splice(idx, 1);
+                    saveKeywords(updated);
                     renderKeywords();
                 });
                 tdAction.appendChild(delBtn);
 
                 tr.appendChild(tdKeyword);
-                tr.appendChild(tdMemo);
-                tr.appendChild(tdCmd);
+                tr.appendChild(tdSlug);
+                tr.appendChild(tdUrl);
                 tr.appendChild(tdAction);
 
-                tbody.appendChild(tr);
+                keywordTbody.appendChild(tr);
             });
         }
 
-        addBtn.addEventListener("click", () => {
+        addKeywordBtn.addEventListener("click", () => {
             const keyword = keywordInput.value.trim();
-            const memo = memoInput.value.trim();
-
             if (!keyword) {
                 alert("키워드를 입력해주세요.");
                 return;
             }
+            const slug = encodeURIComponent(keyword.replace(/\s+/g, "-"));
 
             const list = loadKeywords();
-            list.push({ keyword, memo });
+            list.push({ keyword, slug });
             saveKeywords(list);
+
             keywordInput.value = "";
-            memoInput.value = "";
             renderKeywords();
         });
 
-        // 초기 렌더
+        // 초기 렌더 (비밀번호 풀기 전에도 내부 데이터는 준비해둠)
         renderKeywords();
     </script>
 </body>
