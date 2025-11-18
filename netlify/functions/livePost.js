@@ -34,7 +34,7 @@ exports.handler = async (event) => {
         const keyword = await getKeywordFromStore(slug);
 
         // 🔥 쿠팡 API 호출 (generatePost.js 와 동일한 패턴)
-        const res = await coupang.searchProducts(keyword, 20);
+        const res = await coupang.searchProducts(keyword, 10);
 
         if (!res || res.rCode !== '0') {
             throw new Error(
