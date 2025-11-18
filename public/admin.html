@@ -3,70 +3,50 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>icbhplus · 관리자 페이지</title>
+    <title>icbhplus · 관리자</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             margin: 0;
-            padding: 24px;
+            padding: 32px;
             background: #020817;
             color: #e5e7eb;
         }
 
         .wrap {
-            max-width: 1080px;
+            max-width: 960px;
             margin: 0 auto;
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
         h1 {
+            margin: 0 0 8px;
             font-size: 24px;
-            margin: 0 0 4px;
         }
 
-        .sub {
+        p.sub {
+            margin: 0 0 18px;
             font-size: 13px;
             color: #9ca3af;
         }
 
-        a.back-link {
-            font-size: 12px;
-            color: #38bdf8;
-            text-decoration: none;
-        }
-
-        a.back-link:hover {
-            text-decoration: underline;
-        }
-
-        .card-panel {
+        .box {
             background: #111827;
-            border-radius: 12px;
-            padding: 18px;
+            border-radius: 16px;
+            padding: 16px 18px;
             border: 1px solid rgba(148, 163, 253, 0.2);
-            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.6);
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
-        label {
-            font-size: 13px;
-            display: block;
-            margin-bottom: 6px;
+        input,
+        button {
+            font-family: inherit;
         }
 
-        input[type="password"],
-        input[type="text"] {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 8px 10px;
+        .password-input,
+        .keyword-input {
+            width: 180px;
+            padding: 6px 8px;
             border-radius: 8px;
             border: 1px solid #4b5563;
             background: #020617;
@@ -74,297 +54,212 @@
             font-size: 13px;
         }
 
-        button {
-            padding: 7px 14px;
-            border-radius: 999px;
-            border: 1px solid #38bdf8;
-            background: #0f172a;
+        .btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 253, 0.6);
+            background: #1f2937;
             color: #e5e7eb;
             font-size: 13px;
             cursor: pointer;
+            margin-left: 6px;
         }
 
-        button:hover {
-            background: #0369a1;
-        }
-
-        .small {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-top: 8px;
+        .btn:hover {
+            border-color: #38bdf8;
+            color: #38bdf8;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 14px;
-            margin-top: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
         }
 
         .card {
             background: #020617;
-            border-radius: 16px;
-            padding: 16px;
-            border: 1px solid rgba(148, 163, 253, 0.3);
-            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.75);
-            transition: all 0.18s ease;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            border-radius: 14px;
+            padding: 12px;
+            border: 1px solid rgba(148, 163, 253, 0.2);
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 22px 50px rgba(15, 23, 42, 0.95);
-            border-color: #38bdf8;
+        .title {
+            font-size: 14px;
+            margin-bottom: 6px;
         }
 
-        .card-title {
-            font-size: 16px;
-            margin: 0;
-            color: #e5e7eb;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 10px;
-            background: rgba(56, 189, 248, 0.15);
-            color: #38bdf8;
-            width: fit-content;
-        }
-
-        .tag-admin {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 10px;
-            background: rgba(52, 211, 153, 0.15);
-            color: #34d399;
-            margin-left: 4px;
-        }
-
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 4px;
-            gap: 4px;
-        }
-
-        .url-text {
+        .slug {
             font-size: 11px;
             color: #9ca3af;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            margin-bottom: 8px;
+            word-break: break-all;
         }
 
-        .delete-btn {
-            font-size: 11px;
-            padding: 4px 8px;
+        .btn-del {
+            padding: 4px 10px;
             border-radius: 999px;
-            border: 1px solid #f97373;
-            background: #450a0a;
+            border: 1px solid rgba(239, 68, 68, 0.7);
+            background: rgba(127, 29, 29, 0.3);
             color: #fecaca;
+            font-size: 11px;
             cursor: pointer;
-            flex-shrink: 0;
         }
 
-        .delete-btn:hover {
-            background: #b91c1c;
-            border-color: #fecaca;
+        .btn-del:hover {
+            background: rgba(220, 38, 38, 0.7);
         }
 
-        .mt8 {
-            margin-top: 8px;
+        .link {
+            display: inline-block;
+            font-size: 11px;
+            color: #38bdf8;
+            margin-left: 8px;
+            text-decoration: none;
         }
 
-        .mt12 {
-            margin-top: 12px;
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        .msg {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 6px;
         }
     </style>
 </head>
 
 <body>
     <div class="wrap">
-        <header>
-            <div>
-                <h1>icbhplus 관리자</h1>
-                <div class="sub">
-                    인덱스에 노출되는 추천 키워드를 관리하는 페이지입니다.
-                </div>
-            </div>
-            <div>
-                <a href="index.html" class="back-link">← 메인으로 이동</a>
-            </div>
-        </header>
+        <h1>관리자 페이지</h1>
+        <p class="sub">비밀번호를 입력하면 키워드 관리 화면이 열립니다. (임시: 1938)</p>
 
-        <!-- 로그인 섹션 -->
-        <section id="login-section" class="card-panel">
-            <label for="adminPw">관리자 비밀번호</label>
-            <input id="adminPw" type="password" placeholder="비밀번호를 입력하세요">
-            <div class="mt8">
-                <button id="loginBtn">로그인</button>
-            </div>
-            <div class="small">
-                * 간단 보호용 비밀번호입니다. 코드에 그대로 들어가므로 외부 공유는 피해주세요.<br>
-                * 현재 비밀번호: <b>1938</b>
-            </div>
-        </section>
+        <!-- 로그인 박스 -->
+        <div id="login-box" class="box">
+            <input id="password" type="password" class="password-input" placeholder="비밀번호">
+            <button class="btn" onclick="handleLogin()">입장</button>
+            <div id="login-msg" class="msg"></div>
+        </div>
 
-        <!-- 실제 관리자 영역 -->
-        <section id="admin-section" style="display:none;">
-            <!-- 키워드 추가 -->
-            <div class="card-panel">
-                <h2 style="font-size:18px; margin:0 0 8px;">
-                    키워드 추가 <span class="tag-admin">추가</span>
-                </h2>
-                <label for="keywordInput" class="mt8">키워드 (예: 공기청정기 추천)</label>
-                <input id="keywordInput" type="text" placeholder="키워드를 입력하세요">
-                <div class="mt12">
-                    <button id="addKeywordBtn">추가</button>
-                </div>
-                <div class="small mt8">
-                    * 키워드를 추가하면 slug는 띄어쓰기를 - 로 바꾼 후 URL 인코딩됩니다.<br>
-                    * ex) "공기청정기 추천" → slug: 공기청정기-추천 → URL: /live/공기청정기-추천
-                </div>
+        <!-- 실제 관리 화면 -->
+        <div id="admin-area" style="display:none;">
+            <div class="box">
+                <div style="margin-bottom:8px; font-size:14px;">새 키워드 추가</div>
+                <input id="newKeyword" type="text" class="keyword-input" placeholder="예: 게이밍 마우스 추천">
+                <button class="btn" onclick="addKeyword()">추가</button>
+                <div id="add-msg" class="msg"></div>
             </div>
 
-            <!-- 키워드 목록 -->
-            <div class="card-panel">
-                <h2 style="font-size:18px; margin:0 0 8px;">
-                    추천 리스트 관리 <span class="tag-admin">관리자 전용</span>
-                </h2>
-                <div class="small">
-                    카드 클릭 시 해당 live 페이지를 새 탭으로 열고, 삭제 버튼으로 목록에서 제거할 수 있습니다.
-                </div>
-                <div class="grid mt8" id="cardGrid">
-                    <!-- JS로 렌더링 -->
-                </div>
+            <div class="box">
+                <div style="margin-bottom:8px; font-size:14px;">등록된 키워드 목록</div>
+                <div id="list" class="grid"></div>
+                <div id="list-msg" class="msg"></div>
             </div>
-        </section>
+        </div>
     </div>
 
     <script>
-        const ADMIN_PASSWORD = "1938";
+        const ADMIN_PASSWORD = '1938';
 
-        const loginSection = document.getElementById("login-section");
-        const adminSection = document.getElementById("admin-section");
-        const loginBtn = document.getElementById("loginBtn");
-        const pwInput = document.getElementById("adminPw");
+        function handleLogin() {
+            const pwInput = document.getElementById('password');
+            const msg = document.getElementById('login-msg');
 
-        const cardGrid = document.getElementById("cardGrid");
-        const addBtn = document.getElementById("addKeywordBtn");
-        const keywordInput = document.getElementById("keywordInput");
-
-        loginBtn.addEventListener("click", () => {
-            const pw = pwInput.value.trim();
-            if (pw === ADMIN_PASSWORD) {
-                loginSection.style.display = "none";
-                adminSection.style.display = "block";
+            if (pwInput.value === ADMIN_PASSWORD) {
+                document.getElementById('login-box').style.display = 'none';
+                document.getElementById('admin-area').style.display = 'block';
                 loadKeywords();
             } else {
-                alert("비밀번호가 올바르지 않습니다.");
+                msg.textContent = '비밀번호가 올바르지 않습니다.';
             }
-        });
+        }
 
         async function loadKeywords() {
+            const listEl = document.getElementById('list');
+            const msgEl = document.getElementById('list-msg');
+            listEl.innerHTML = '';
+            msgEl.textContent = '';
+
             try {
-                const res = await fetch("/.netlify/functions/keywords");
+                const res = await fetch('/.netlify/functions/getKeywords');
+                if (!res.ok) throw new Error('불러오기 실패');
                 const list = await res.json();
-                renderCards(list);
-            } catch (e) {
-                console.error(e);
-                alert("키워드 불러오기 실패");
-            }
-        }
 
-        function renderCards(list) {
-            cardGrid.innerHTML = "";
-
-            if (!Array.isArray(list) || list.length === 0) {
-                cardGrid.innerHTML = "<div class='small'>등록된 키워드가 없습니다.</div>";
-                return;
-            }
-
-            list.forEach((item) => {
-                const card = document.createElement("article");
-                card.className = "card";
-                card.dataset.slug = item.slug;
-
-                card.innerHTML = `
-          <div class="card-title">${item.title}</div>
-          <span class="badge">자동 생성</span>
-          <div class="card-footer">
-            <span class="url-text">/live/${item.slug}</span>
-            <button class="delete-btn">삭제</button>
-          </div>
-        `;
-
-                // 카드 클릭 → live 페이지 새 탭
-                card.addEventListener("click", (e) => {
-                    if (e.target.closest(".delete-btn")) return;
-                    const slug = card.dataset.slug;
-                    window.open("/live/" + slug, "_blank");
-                });
-
-                // 삭제 버튼
-                const delBtn = card.querySelector(".delete-btn");
-                delBtn.addEventListener("click", async (e) => {
-                    e.stopPropagation();
-                    if (!confirm(`"${item.title}" 키워드를 삭제할까요?`)) return;
-
-                    try {
-                        await fetch("/.netlify/functions/keywords", {
-                            method: "DELETE",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ slug: item.slug }),
-                        });
-                        loadKeywords();
-                    } catch (err) {
-                        console.error(err);
-                        alert("삭제 요청 실패");
-                    }
-                });
-
-                cardGrid.appendChild(card);
-            });
-        }
-
-        addBtn.addEventListener("click", async () => {
-            const title = keywordInput.value.trim();
-            if (!title) {
-                alert("키워드를 입력하세요.");
-                return;
-            }
-
-            try {
-                const res = await fetch("/.netlify/functions/keywords", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ title }),
-                });
-
-                if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    if (res.status === 409) {
-                        alert("이미 존재하는 키워드입니다.");
-                    } else {
-                        alert("추가 실패: " + (data.error || res.status));
-                    }
+                if (!list || list.length === 0) {
+                    msgEl.textContent = '아직 등록된 키워드가 없습니다.';
                     return;
                 }
 
-                keywordInput.value = "";
-                loadKeywords();
-            } catch (e) {
-                console.error(e);
-                alert("키워드 추가 요청 실패");
+                for (const item of list) {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    card.innerHTML = `
+            <div class="title">${item.keyword}</div>
+            <div class="slug">/live/${item.slug}</div>
+            <button class="btn-del" data-id="${item.id}">삭제</button>
+            <a class="link" href="/live/${item.slug}" target="_blank">미리 보기</a>
+          `;
+
+                    const delBtn = card.querySelector('.btn-del');
+                    delBtn.addEventListener('click', () => deleteKeyword(item.id));
+
+                    listEl.appendChild(card);
+                }
+            } catch (err) {
+                console.error(err);
+                msgEl.textContent = '목록을 불러오지 못했습니다.';
             }
-        });
+        }
+
+        async function addKeyword() {
+            const input = document.getElementById('newKeyword');
+            const msgEl = document.getElementById('add-msg');
+            const keyword = input.value.trim();
+
+            if (!keyword) {
+                msgEl.textContent = '키워드를 입력해 주세요.';
+                return;
+            }
+
+            msgEl.textContent = '저장 중...';
+
+            try {
+                const res = await fetch('/.netlify/functions/saveKeyword', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword })
+                });
+
+                if (!res.ok) throw new Error('저장 실패');
+
+                input.value = '';
+                msgEl.textContent = '저장되었습니다.';
+                await loadKeywords();
+            } catch (err) {
+                console.error(err);
+                msgEl.textContent = '저장 중 오류가 발생했습니다.';
+            }
+        }
+
+        async function deleteKeyword(id) {
+            if (!confirm('정말 삭제할까요?')) return;
+
+            try {
+                const res = await fetch('/.netlify/functions/deleteKeyword', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+
+                if (!res.ok) throw new Error('삭제 실패');
+                await loadKeywords();
+            } catch (err) {
+                console.error(err);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
     </script>
 </body>
 

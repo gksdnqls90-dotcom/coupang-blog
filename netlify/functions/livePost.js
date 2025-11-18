@@ -1,36 +1,43 @@
-// netlify/functions/livePost.js
+const CoupangPartners = require('../../CoupangPartners');
+const { getStore } = require('@netlify/blobs');
 
-// 루트의 CoupangPartners.js 재사용 (경로 주의!)
-const CoupangPartners = require("../../CoupangPartners");
+const coupang = new CoupangPartners(); // 기존 클래스 그대로 사용
 
-// 상품 리스트 → HTML 문자열
-function renderHtml(keyword, products) {
-    const title = `${keyword} 추천 쿠팡 상품 모음`;
+async function getKeywordFromStore(slug) {
+    const store = getStore('keywords-store');
+    const list = await store.get('list', { type: 'json' }) || [];
+    const hit = list.find((item) => item.slug === slug);
+    return hit ? hit.keyword : decodeURIComponent(slug).replace(/-/g, ' ');
+}
 
-    const itemsHtml = (products || [])
-        .map((p) => {
+exports.handler = async (event) => {
+    try {
+        const slug = (event.queryStringParameters || {}).slug;
+        if (!slug) {
+            return { statusCode: 400, body: 'missing slug' };
+        }
+
+        const keyword = await getKeywordFromStore(slug);
+        const products = await coupang.searchProducts(keyword, 20);
+
+        const itemsHtml = products.map((p) => {
             return `
         <article class="item">
-          <a href="${p.productUrl}" target="_blank" rel="nofollow noopener noreferrer">
-            <img src="${p.productImage}" alt="${p.productName}">
+          <a href="${p.coupangUrl}" target="_blank" rel="nofollow noopener">
+            <img src="${p.imageUrl}" alt="${p.productName}">
             <h2>${p.productName}</h2>
-            <p class="price">${Number(p.productPrice).toLocaleString()}원</p>
-            <p class="meta">
-              ${p.isRocket ? "로켓배송 · " : ""}${p.isFreeShipping ? "무료배송" : ""}
-            </p>
+            <p class="price">${p.price}원</p>
           </a>
         </article>
       `;
-        })
-        .join("");
+        }).join('');
 
-    return `<!DOCTYPE html>
+        const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>${title}</title>
-  <meta name="description" content="${keyword} 관련 추천 쿠팡 상품을 자동으로 모아서 보여주는 페이지입니다.">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>${keyword} · 쿠팡 추천</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -39,120 +46,71 @@ function renderHtml(keyword, products) {
       background: #020817;
       color: #e5e7eb;
     }
-    header {
-      max-width: 1080px;
-      margin: 0 auto 24px;
-    }
-    h1 {
-      margin: 0 0 8px;
-      font-size: 24px;
-    }
-    .sub {
-      margin: 0;
-      font-size: 13px;
-      color: #9ca3af;
-    }
-    main {
+    .wrap {
       max-width: 1080px;
       margin: 0 auto;
+    }
+    h1 {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+    p.sub {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 18px;
+    }
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
       gap: 16px;
     }
     .item {
-      background: #0f172a;
-      border-radius: 14px;
-      padding: 12px;
-      border: 1px solid rgba(148, 163, 253, 0.18);
-      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.75);
-      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      background: #111827;
+      border-radius: 12px;
+      padding: 10px;
+      border: 1px solid rgba(148,163,253,0.2);
     }
-    .item:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 24px 55px rgba(15, 23, 42, 0.9);
-      border-color: #38bdf8;
-    }
-    .item a {
-      color: inherit;
-      text-decoration: none;
-      display: block;
-    }
-    img {
+    .item img {
       width: 100%;
       border-radius: 8px;
-      margin-bottom: 8px;
-      object-fit: cover;
-      max-height: 200px;
+      margin-bottom: 6px;
     }
-    h2 {
-      font-size: 14px;
-      margin: 4px 0 6px;
-      min-height: 2.7em;
+    .item h2 {
+      font-size: 13px;
+      margin: 0 0 4px;
     }
     .price {
-      margin: 0;
-      font-weight: 600;
+      font-size: 13px;
       color: #f97316;
-      font-size: 14px;
+      margin: 0;
     }
-    .meta {
-      margin: 2px 0 0;
-      font-size: 11px;
-      color: #9ca3af;
-    }
-    footer {
-      max-width: 1080px;
-      margin: 24px auto 0;
-      font-size: 11px;
-      color: #9ca3af;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>${keyword} 추천 상품</h1>
-    <p class="sub">쿠팡 파트너스 API를 통해 자동으로 불러온 ${keyword} 관련 인기 상품 목록입니다.</p>
-  </header>
-  <main>
-    ${itemsHtml || "<p>표시할 상품이 없습니다.</p>"}
-  </main>
-  <footer>
-    이 포스팅은 쿠팡 파트너스 활동의 일환으로 이에 따른 일정액의 수수료를 제공받습니다.
-  </footer>
+  <div class="wrap">
+    <h1>${keyword} 추천</h1>
+    <p class="sub">쿠팡 파트너스 API로 실시간 생성된 추천 리스트입니다.</p>
+    <section class="grid">
+      ${itemsHtml}
+    </section>
+    <p style="margin-top:24px;font-size:12px;color:#9ca3af;">
+      이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받을 수 있습니다.
+    </p>
+  </div>
 </body>
 </html>`;
-}
-
-exports.handler = async (event) => {
-    try {
-        const slug = event.queryStringParameters.slug;
-        if (!slug) {
-            return { statusCode: 400, body: "slug is required" };
-        }
-
-        const decoded = decodeURIComponent(slug);
-        const keyword = decoded.replace(/-/g, " ");
-
-        const cp = new CoupangPartners(
-            process.env.CP_ACCESS_KEY,
-            process.env.CP_SECRET_KEY
-        );
-
-        const products = await cp.searchProducts(keyword, 10);
-        const html = renderHtml(keyword, products);
 
         return {
             statusCode: 200,
-            headers: {
-                "Content-Type": "text/html; charset=utf-8",
-            },
-            body: html,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+            body: html
         };
     } catch (err) {
         console.error(err);
-        return {
-            statusCode: 500,
-            body: "Internal Server Error",
-        };
+        return { statusCode: 500, body: 'internal error' };
     }
 };

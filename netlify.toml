@@ -2,6 +2,7 @@
   publish = "public"
   functions = "netlify/functions"
 
+# /live/슬러그  -> serverless 함수에서 HTML을 만들어서 응답
 [[redirects]]
   from = "/live/:slug"
   to = "/.netlify/functions/livePost?slug=:slug"

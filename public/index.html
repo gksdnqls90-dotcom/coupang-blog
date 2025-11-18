@@ -6,7 +6,6 @@
   <title>icbhplus · 쿠팡 추천 리스트 자동 모음</title>
   <meta name="description" content="쿠팡 파트너스 API로 자동 생성되는 추천 상품 페이지 모음">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -22,6 +21,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
+    }
+
+    .left {
+      flex: 1;
+      min-width: 0;
     }
 
     .topbar {
@@ -31,24 +36,32 @@
     }
 
     h1 {
-      margin: 0 0 8px;
+      margin: 0 0 6px;
       font-size: 28px;
+    }
+
+    p.sub {
+      margin: 0;
+      font-size: 13px;
+      color: #9ca3af;
+      line-height: 1.6;
     }
 
     .admin-btn {
       padding: 8px 14px;
-      background: #1e293b;
-      color: #38bdf8;
-      border: 1px solid #38bdf8;
-      border-radius: 8px;
-      font-size: 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 253, 0.5);
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5e7eb;
+      font-size: 12px;
+      cursor: pointer;
       text-decoration: none;
-      transition: all .18s ease;
+      white-space: nowrap;
     }
 
     .admin-btn:hover {
-      background: #38bdf8;
-      color: #020817;
+      border-color: #38bdf8;
+      color: #38bdf8;
     }
 
     .grid {
@@ -59,67 +72,44 @@
       margin: 0 auto;
     }
 
-    .card {
+    /* 카드 전체를 <a>로 만들어서 어디를 클릭해도 링크 타게 */
+    .card-link {
+      display: block;
+      text-decoration: none;
       background: #111827;
       border-radius: 16px;
-      padding: 16px;
+      padding: 14px;
       border: 1px solid rgba(148, 163, 253, 0.16);
       box-shadow: 0 16px 40px rgba(15, 23, 42, 0.55);
-      transition: all 0.18s ease;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      transition: all .18s ease;
+      color: inherit;
     }
 
-    .card:hover {
+    .card-link:hover {
       transform: translateY(-4px);
       box-shadow: 0 24px 55px rgba(15, 23, 42, 0.9);
       border-color: #38bdf8;
     }
 
     .card-title {
-      font-size: 17px;
-      margin: 0;
+      font-size: 16px;
+      margin: 0 0 6px;
       color: #e5e7eb;
+    }
+
+    .card-sub {
+      font-size: 13px;
+      color: #38bdf8;
     }
 
     .badge {
       display: inline-block;
+      margin-top: 4px;
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 10px;
       background: rgba(56, 189, 248, 0.12);
       color: #38bdf8;
-      width: fit-content;
-    }
-
-    .card-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 4px;
-      gap: 4px;
-    }
-
-    .url-text {
-      font-size: 11px;
-      color: #9ca3af;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .delete-btn {
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid #4b5563;
-      background: #020617;
-      color: #6b7280;
-      cursor: not-allowed;
-      opacity: 0.5;
-      flex-shrink: 0;
     }
 
     .empty {
@@ -129,68 +119,62 @@
       color: #9ca3af;
     }
   </style>
-
-  <script>
-    async function loadKeywords() {
-      try {
-        const res = await fetch("/.netlify/functions/keywords");
-        const list = await res.json();
-        const grid = document.getElementById("cardGrid");
-
-        if (!Array.isArray(list) || list.length === 0) {
-          grid.innerHTML = "";
-          document.getElementById("empty").style.display = "block";
-          return;
-        }
-
-        document.getElementById("empty").style.display = "none";
-        grid.innerHTML = "";
-
-        list.forEach(item => {
-          const card = document.createElement("article");
-          card.className = "card";
-          card.dataset.link = "/live/" + item.slug;
-
-          card.innerHTML = `
-            <div class="card-title">${item.title}</div>
-            <span class="badge">자동 생성</span>
-            <div class="card-footer">
-              <span class="url-text">/live/${item.slug}</span>
-              <button class="delete-btn" disabled>삭제(관리자 전용)</button>
-            </div>
-          `;
-
-          card.addEventListener("click", (e) => {
-            if (e.target.closest(".delete-btn")) return;
-            const link = card.dataset.link;
-            if (link) window.location.href = link;
-          });
-
-          grid.appendChild(card);
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", loadKeywords);
-  </script>
 </head>
 
 <body>
   <header class="wrap">
-    <div>
+    <div class="left">
       <div class="topbar">icbhplus · 쿠팡 추천 포털</div>
       <h1>쿠팡 추천 리스트</h1>
+      <p class="sub">등록된 키워드를 클릭하면, 해당 키워드로 실시간 생성된 추천 상품 페이지가 열립니다.</p>
     </div>
-    <a href="admin.html" class="admin-btn">관리자 페이지</a>
+    <a href="/admin.html" class="admin-btn">관리자 페이지 →</a>
   </header>
 
-  <main class="grid" id="cardGrid"></main>
-
+  <main id="grid" class="grid"></main>
   <div id="empty" class="empty" style="display:none;">
-    아직 등록된 추천 키워드가 없습니다. 관리자 페이지에서 키워드를 추가해 주세요.
+    아직 등록된 키워드가 없습니다. 관리자 페이지에서 키워드를 추가해 주세요.
   </div>
+
+  <script>
+    async function loadKeywords() {
+      const grid = document.getElementById('grid');
+      const empty = document.getElementById('empty');
+      grid.innerHTML = '';
+      empty.style.display = 'none';
+
+      try {
+        const res = await fetch('/.netlify/functions/getKeywords');
+        if (!res.ok) throw new Error('키워드 불러오기 실패');
+        const list = await res.json();
+
+        if (!list || list.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+
+        for (const item of list) {
+          const a = document.createElement('a');
+          a.href = `/live/${item.slug}`;
+          a.className = 'card-link';
+
+          a.innerHTML = `
+            <div class="card-title">${item.keyword}</div>
+            <div class="card-sub">바로 보기 →</div>
+            <div class="badge">자동 생성</div>
+          `;
+
+          grid.appendChild(a);
+        }
+      } catch (err) {
+        console.error(err);
+        empty.style.display = 'block';
+        empty.textContent = '키워드 목록을 불러오지 못했습니다. 나중에 다시 시도해주세요.';
+      }
+    }
+
+    loadKeywords();
+  </script>
 </body>
 
 </html>
