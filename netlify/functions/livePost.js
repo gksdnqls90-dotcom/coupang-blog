@@ -4,45 +4,62 @@ const { getStore, connectLambda } = require('@netlify/blobs');
 
 const coupang = new CoupangPartners();
 
-// slug -> keyword 찾기
+// Blobs 에서 slug -> keyword 찾기
 async function getKeywordFromStore(slug) {
     const store = getStore('keywords-store');
     const list = (await store.get('list', { type: 'json' })) || [];
     const hit = list.find((item) => item.slug === slug);
+    // 없으면 slug 를 디코딩해서 대충 키워드로 사용
     return hit ? hit.keyword : decodeURIComponent(slug).replace(/-/g, ' ');
 }
 
 exports.handler = async (event) => {
     try {
-        // Blobs 초기화
+        // Netlify Blobs 초기화 (Lambda 모드)
         connectLambda(event);
 
-        // 1순위: 쿼리스트링, 2순위: path 맨 끝(segment)
+        // 1순위: ?slug=..., 2순위: path 마지막 segment
         let slug =
             (event.queryStringParameters && event.queryStringParameters.slug) ||
             (event.path || '').split('/').pop();
 
-        // netlify에서 path가 '/.netlify/functions/livePost' 로 올 수도 있으니 방어
         if (!slug || slug === 'livePost') {
             return {
                 statusCode: 400,
+                headers: { 'Content-Type': 'text/plain; charset=utf-8' },
                 body: 'slug is required',
             };
         }
 
-        // 여기서 slug는 '공기청정기-추천' 이거나 퍼센트 인코딩된 문자열
         const keyword = await getKeywordFromStore(slug);
 
-        const products = await coupang.searchProducts(keyword, 20);
+        // 🔥 쿠팡 API 호출 (generatePost.js 와 동일한 패턴)
+        const res = await coupang.searchProducts(keyword, 20);
+
+        if (!res || res.rCode !== '0') {
+            throw new Error(
+                `Coupang API error: ${res && (res.rMessage || res.message || res.rCode)}`
+            );
+        }
+
+        const products = (res.data && res.data.productData) || [];
+        if (!Array.isArray(products) || products.length === 0) {
+            throw new Error('상품 데이터가 없습니다.');
+        }
 
         const itemsHtml = products
             .map(
                 (p) => `
         <article class="item">
-          <a href="${p.coupangUrl}" target="_blank" rel="nofollow noopener">
-            <img src="${p.imageUrl}" alt="${p.productName}">
-            <h2>${p.productName}</h2>
-            <p class="price">${p.price}원</p>
+          <a href="${p.productUrl}" target="_blank" rel="nofollow noopener">
+            <img src="${p.productImage}" alt="${p.productName}">
+            <h2>${p.rank}. ${p.productName}</h2>
+            <p class="price">${p.productPrice.toLocaleString()}원</p>
+            <p class="meta">
+              ${p.isRocket ? '🚀 로켓배송' : '📦 일반배송'}
+              ${p.isFreeShipping ? ' · 무료배송 가능' : ''}
+              ${p.categoryName ? ` · ${p.categoryName}` : ''}
+            </p>
           </a>
         </article>
       `
@@ -78,7 +95,7 @@ exports.handler = async (event) => {
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 12px;
     }
     .item {
@@ -102,6 +119,11 @@ exports.handler = async (event) => {
     .price {
       font-size: 13px;
       color: #f97316;
+      margin: 0 0 4px;
+    }
+    .meta {
+      font-size: 11px;
+      color: #9ca3af;
       margin: 0;
     }
     a {
@@ -115,7 +137,7 @@ exports.handler = async (event) => {
     <h1>${keyword} · 쿠팡 추천</h1>
     <p class="sub">아래 상품을 클릭하면 쿠팡 상세페이지로 이동합니다.</p>
     <section class="grid">
-      ${itemsHtml || '<p>상품을 불러오지 못했습니다.</p>'}
+      ${itemsHtml}
     </section>
   </div>
 </body>
