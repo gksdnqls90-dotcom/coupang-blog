@@ -112,6 +112,20 @@
             font-size: 11px;
             color: #9ca3af;
         }
+
+        .home-btn {
+            font-size: 13px;
+            color: #a5b4fc;
+            text-decoration: none;
+            border: 1px solid rgba(129, 140, 248, 0.5);
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .home-btn:hover {
+            background: rgba(79, 70, 229, 0.3);
+        }
     </style>
 </head>
 
@@ -138,6 +152,9 @@
                 <input id="keywordInput" type="text" placeholder="공기청정기 추천" />
                 <button id="addBtn">추가</button>
                 <div class="error" id="addError" style="display:none;"></div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <a href="/index.html" class="home-btn">← 홈으로 돌아가기</a>
             </div>
 
             <!-- 등록된 키워드 목록 -->
