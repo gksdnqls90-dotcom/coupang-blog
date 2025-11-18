@@ -2,9 +2,9 @@
 <html lang="ko">
 
 <head>
-    <meta charset="UTF-8">
-    <title>icbhplus · 관리자</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <title>icbhplus 관리자</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -25,241 +25,241 @@
         }
 
         p.sub {
-            margin: 0 0 18px;
+            margin: 0 0 24px;
             font-size: 13px;
             color: #9ca3af;
         }
 
         .box {
-            background: #111827;
+            background: #0b1120;
             border-radius: 16px;
-            padding: 16px 18px;
-            border: 1px solid rgba(148, 163, 253, 0.2);
+            padding: 18px 20px;
+            border: 1px solid rgba(148, 163, 253, 0.3);
             margin-bottom: 18px;
         }
 
-        input,
-        button {
-            font-family: inherit;
+        .box-title {
+            font-size: 16px;
+            margin-bottom: 10px;
         }
 
-        .password-input,
-        .keyword-input {
-            width: 180px;
-            padding: 6px 8px;
-            border-radius: 8px;
-            border: 1px solid #4b5563;
-            background: #020617;
-            color: #e5e7eb;
+        label {
             font-size: 13px;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(148, 163, 253, 0.6);
-            background: #1f2937;
-            color: #e5e7eb;
-            font-size: 13px;
-            cursor: pointer;
-            margin-left: 6px;
-        }
-
-        .btn:hover {
-            border-color: #38bdf8;
-            color: #38bdf8;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        .card {
-            background: #020617;
-            border-radius: 14px;
-            padding: 12px;
-            border: 1px solid rgba(148, 163, 253, 0.2);
-        }
-
-        .title {
-            font-size: 14px;
+            display: block;
             margin-bottom: 6px;
         }
 
-        .slug {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-bottom: 8px;
-            word-break: break-all;
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 14px;
         }
 
-        .btn-del {
-            padding: 4px 10px;
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
             border-radius: 999px;
-            border: 1px solid rgba(239, 68, 68, 0.7);
-            background: rgba(127, 29, 29, 0.3);
-            color: #fecaca;
-            font-size: 11px;
+            border: none;
+            background: #4f46e5;
+            color: #e5e7eb;
+            font-size: 13px;
             cursor: pointer;
         }
 
-        .btn-del:hover {
-            background: rgba(220, 38, 38, 0.7);
+        button.danger {
+            background: #b91c1c;
         }
 
-        .link {
-            display: inline-block;
-            font-size: 11px;
-            color: #38bdf8;
-            margin-left: 8px;
-            text-decoration: none;
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
         }
 
-        .link:hover {
-            text-decoration: underline;
-        }
-
-        .msg {
+        .error {
             font-size: 12px;
-            color: #9ca3af;
+            color: #f87171;
             margin-top: 6px;
+        }
+
+        .keyword-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .k-card {
+            background: #020617;
+            border-radius: 12px;
+            padding: 10px 12px;
+            border: 1px solid rgba(148, 163, 253, 0.3);
+            font-size: 13px;
+        }
+
+        .k-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .k-slug {
+            font-size: 11px;
+            color: #9ca3af;
         }
     </style>
 </head>
 
 <body>
     <div class="wrap">
-        <h1>관리자 페이지</h1>
-        <p class="sub">비밀번호를 입력하면 키워드 관리 화면이 열립니다. (임시: 1938)</p>
+        <h1>icbhplus 관리자</h1>
+        <p class="sub">비밀번호를 입력하면 키워드를 관리할 수 있습니다. (임시 비밀번호: 1938)</p>
 
-        <!-- 로그인 박스 -->
-        <div id="login-box" class="box">
-            <input id="password" type="password" class="password-input" placeholder="비밀번호">
-            <button class="btn" onclick="handleLogin()">입장</button>
-            <div id="login-msg" class="msg"></div>
+        <!-- 비밀번호 입력 박스 -->
+        <div class="box" id="pwBox">
+            <div class="box-title">관리자 로그인</div>
+            <label for="pwInput">비밀번호</label>
+            <input id="pwInput" type="password" placeholder="1938" />
+            <button id="pwBtn">확인</button>
+            <div class="error" id="pwError" style="display:none;">비밀번호가 올바르지 않습니다.</div>
         </div>
 
-        <!-- 실제 관리 화면 -->
-        <div id="admin-area" style="display:none;">
+        <!-- 실제 관리 UI -->
+        <div id="adminUI" style="display:none;">
+            <!-- 키워드 추가 -->
             <div class="box">
-                <div style="margin-bottom:8px; font-size:14px;">새 키워드 추가</div>
-                <input id="newKeyword" type="text" class="keyword-input" placeholder="예: 게이밍 마우스 추천">
-                <button class="btn" onclick="addKeyword()">추가</button>
-                <div id="add-msg" class="msg"></div>
+                <div class="box-title">새 키워드 추가</div>
+                <label for="keywordInput">키워드 (예: 공기청정기 추천)</label>
+                <input id="keywordInput" type="text" placeholder="공기청정기 추천" />
+                <button id="addBtn">추가</button>
+                <div class="error" id="addError" style="display:none;"></div>
             </div>
 
+            <!-- 등록된 키워드 목록 -->
             <div class="box">
-                <div style="margin-bottom:8px; font-size:14px;">등록된 키워드 목록</div>
-                <div id="list" class="grid"></div>
-                <div id="list-msg" class="msg"></div>
+                <div class="box-title">등록된 키워드 목록</div>
+                <div id="listEmpty" style="font-size:13px; color:#9ca3af;">목록을 불러오는 중입니다…</div>
+                <div class="keyword-list" id="keywordList"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const ADMIN_PASSWORD = '1938';
+        const ADMIN_PW = '1938';
+        const API_BASE = '/.netlify/functions';
 
-        function handleLogin() {
-            const pwInput = document.getElementById('password');
-            const msg = document.getElementById('login-msg');
+        const pwBox = document.getElementById('pwBox');
+        const pwInput = document.getElementById('pwInput');
+        const pwBtn = document.getElementById('pwBtn');
+        const pwError = document.getElementById('pwError');
+        const adminUI = document.getElementById('adminUI');
 
-            if (pwInput.value === ADMIN_PASSWORD) {
-                document.getElementById('login-box').style.display = 'none';
-                document.getElementById('admin-area').style.display = 'block';
+        const keywordInput = document.getElementById('keywordInput');
+        const addBtn = document.getElementById('addBtn');
+        const addError = document.getElementById('addError');
+        const listEmpty = document.getElementById('listEmpty');
+        const keywordList = document.getElementById('keywordList');
+
+        // 로그인
+        pwBtn.addEventListener('click', () => {
+            if (pwInput.value === ADMIN_PW) {
+                pwError.style.display = 'none';
+                pwBox.style.display = 'none';
+                adminUI.style.display = 'block';
                 loadKeywords();
             } else {
-                msg.textContent = '비밀번호가 올바르지 않습니다.';
+                pwError.style.display = 'block';
             }
-        }
+        });
 
+        // 키워드 목록 불러오기
         async function loadKeywords() {
-            const listEl = document.getElementById('list');
-            const msgEl = document.getElementById('list-msg');
-            listEl.innerHTML = '';
-            msgEl.textContent = '';
-
+            listEmpty.textContent = '목록을 불러오는 중입니다…';
+            keywordList.innerHTML = '';
             try {
-                const res = await fetch('/.netlify/functions/getKeywords');
-                if (!res.ok) throw new Error('불러오기 실패');
-                const list = await res.json();
-
-                if (!list || list.length === 0) {
-                    msgEl.textContent = '아직 등록된 키워드가 없습니다.';
+                const res = await fetch(`${API_BASE}/getKeywords`);
+                const list = await res.json(); // getKeywords는 배열을 바로 리턴함
+                if (!list.length) {
+                    listEmpty.textContent = '등록된 키워드가 없습니다.';
                     return;
                 }
-
-                for (const item of list) {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-
-                    card.innerHTML = `
-            <div class="title">${item.keyword}</div>
-            <div class="slug">/live/${item.slug}</div>
-            <button class="btn-del" data-id="${item.id}">삭제</button>
-            <a class="link" href="/live/${item.slug}" target="_blank">미리 보기</a>
-          `;
-
-                    const delBtn = card.querySelector('.btn-del');
-                    delBtn.addEventListener('click', () => deleteKeyword(item.id));
-
-                    listEl.appendChild(card);
-                }
-            } catch (err) {
-                console.error(err);
-                msgEl.textContent = '목록을 불러오지 못했습니다.';
+                listEmpty.textContent = '';
+                list.forEach((item) => appendKeywordCard(item));
+            } catch (e) {
+                console.error(e);
+                listEmpty.textContent = '목록을 불러오는 중 오류가 발생했습니다.';
             }
         }
 
-        async function addKeyword() {
-            const input = document.getElementById('newKeyword');
-            const msgEl = document.getElementById('add-msg');
-            const keyword = input.value.trim();
+        function appendKeywordCard(item) {
+            const div = document.createElement('div');
+            div.className = 'k-card';
 
+            const liveUrl = `/live/${item.slug}`;
+
+            div.innerHTML = `
+        <div class="k-main">
+          <span>${item.keyword}</span>
+          <button class="danger" data-id="${item.id}">삭제</button>
+        </div>
+        <div class="k-slug">${liveUrl}</div>
+      `;
+
+            const delBtn = div.querySelector('button.danger');
+            delBtn.addEventListener('click', async () => {
+                if (!confirm(`"${item.keyword}" 키워드를 삭제할까요?`)) return;
+                try {
+                    await fetch(`${API_BASE}/deleteKeywords`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: item.id }),
+                    });
+                    loadKeywords();
+                } catch (e) {
+                    alert('삭제 중 오류가 발생했습니다.');
+                }
+            });
+
+            keywordList.appendChild(div);
+        }
+
+        // 키워드 추가
+        addBtn.addEventListener('click', async () => {
+            const keyword = keywordInput.value.trim();
             if (!keyword) {
-                msgEl.textContent = '키워드를 입력해 주세요.';
+                addError.textContent = '키워드를 입력해 주세요.';
+                addError.style.display = 'block';
                 return;
             }
-
-            msgEl.textContent = '저장 중...';
-
+            addError.style.display = 'none';
+            addBtn.disabled = true;
             try {
-                const res = await fetch('/.netlify/functions/saveKeyword', {
+                const res = await fetch(`${API_BASE}/saveKeywords`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ keyword })
+                    body: JSON.stringify({ keyword }),
                 });
-
-                if (!res.ok) throw new Error('저장 실패');
-
-                input.value = '';
-                msgEl.textContent = '저장되었습니다.';
-                await loadKeywords();
-            } catch (err) {
-                console.error(err);
-                msgEl.textContent = '저장 중 오류가 발생했습니다.';
+                if (!res.ok) {
+                    const t = await res.text();
+                    addError.textContent = `저장 실패: ${t}`;
+                    addError.style.display = 'block';
+                } else {
+                    keywordInput.value = '';
+                    await loadKeywords();
+                }
+            } catch (e) {
+                console.error(e);
+                addError.textContent = '저장 중 오류가 발생했습니다.';
+                addError.style.display = 'block';
+            } finally {
+                addBtn.disabled = false;
             }
-        }
-
-        async function deleteKeyword(id) {
-            if (!confirm('정말 삭제할까요?')) return;
-
-            try {
-                const res = await fetch('/.netlify/functions/deleteKeyword', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-
-                if (!res.ok) throw new Error('삭제 실패');
-                await loadKeywords();
-            } catch (err) {
-                console.error(err);
-                alert('삭제 중 오류가 발생했습니다.');
-            }
-        }
+        });
     </script>
 </body>
 

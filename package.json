@@ -11,8 +11,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
     "@netlify/blobs": "^10.4.1",
     "axios": "^1.13.2",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "firebase": "^12.6.0"
   }
 }
