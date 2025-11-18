@@ -4,7 +4,7 @@ const { getStore, connectLambda } = require('@netlify/blobs');
 
 const coupang = new CoupangPartners();
 
-// slug → keyword 찾기
+// slug -> keyword 찾기
 async function getKeywordFromStore(slug) {
     const store = getStore('keywords-store');
     const list = (await store.get('list', { type: 'json' })) || [];
@@ -14,24 +14,30 @@ async function getKeywordFromStore(slug) {
 
 exports.handler = async (event) => {
     try {
-        // ★ Blobs 초기화
+        // Blobs 초기화
         connectLambda(event);
 
-        const slug = (event.queryStringParameters || {}).slug;
-        if (!slug) {
+        // 1순위: 쿼리스트링, 2순위: path 맨 끝(segment)
+        let slug =
+            (event.queryStringParameters && event.queryStringParameters.slug) ||
+            (event.path || '').split('/').pop();
+
+        // netlify에서 path가 '/.netlify/functions/livePost' 로 올 수도 있으니 방어
+        if (!slug || slug === 'livePost') {
             return {
                 statusCode: 400,
                 body: 'slug is required',
             };
         }
 
+        // 여기서 slug는 '공기청정기-추천' 이거나 퍼센트 인코딩된 문자열
         const keyword = await getKeywordFromStore(slug);
 
         const products = await coupang.searchProducts(keyword, 20);
 
         const itemsHtml = products
-            .map((p) => {
-                return `
+            .map(
+                (p) => `
         <article class="item">
           <a href="${p.coupangUrl}" target="_blank" rel="nofollow noopener">
             <img src="${p.imageUrl}" alt="${p.productName}">
@@ -39,8 +45,8 @@ exports.handler = async (event) => {
             <p class="price">${p.price}원</p>
           </a>
         </article>
-      `;
-            })
+      `
+            )
             .join('');
 
         const html = `<!DOCTYPE html>
