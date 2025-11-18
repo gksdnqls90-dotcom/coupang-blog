@@ -1,27 +1,37 @@
+// netlify/functions/livePost.js
 const CoupangPartners = require('../../CoupangPartners');
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 
-const coupang = new CoupangPartners(); // 기존 클래스 그대로 사용
+const coupang = new CoupangPartners();
 
+// slug → keyword 찾기
 async function getKeywordFromStore(slug) {
     const store = getStore('keywords-store');
-    const list = await store.get('list', { type: 'json' }) || [];
+    const list = (await store.get('list', { type: 'json' })) || [];
     const hit = list.find((item) => item.slug === slug);
     return hit ? hit.keyword : decodeURIComponent(slug).replace(/-/g, ' ');
 }
 
 exports.handler = async (event) => {
     try {
+        // ★ Blobs 초기화
+        connectLambda(event);
+
         const slug = (event.queryStringParameters || {}).slug;
         if (!slug) {
-            return { statusCode: 400, body: 'missing slug' };
+            return {
+                statusCode: 400,
+                body: 'slug is required',
+            };
         }
 
         const keyword = await getKeywordFromStore(slug);
+
         const products = await coupang.searchProducts(keyword, 20);
 
-        const itemsHtml = products.map((p) => {
-            return `
+        const itemsHtml = products
+            .map((p) => {
+                return `
         <article class="item">
           <a href="${p.coupangUrl}" target="_blank" rel="nofollow noopener">
             <img src="${p.imageUrl}" alt="${p.productName}">
@@ -30,7 +40,8 @@ exports.handler = async (event) => {
           </a>
         </article>
       `;
-        }).join('');
+            })
+            .join('');
 
         const html = `<!DOCTYPE html>
 <html lang="ko">
@@ -52,32 +63,35 @@ exports.handler = async (event) => {
     }
     h1 {
       font-size: 22px;
-      margin-bottom: 12px;
+      margin: 0 0 8px;
     }
     p.sub {
+      margin: 0 0 16px;
       font-size: 13px;
       color: #9ca3af;
-      margin-bottom: 18px;
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
     }
     .item {
       background: #111827;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 10px;
-      border: 1px solid rgba(148,163,253,0.2);
+      border: 1px solid rgba(148, 163, 253, 0.2);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.6);
     }
-    .item img {
+    img {
       width: 100%;
       border-radius: 8px;
+      display: block;
       margin-bottom: 6px;
     }
-    .item h2 {
+    h2 {
       font-size: 13px;
       margin: 0 0 4px;
+      color: #e5e7eb;
     }
     .price {
       font-size: 13px;
@@ -92,14 +106,11 @@ exports.handler = async (event) => {
 </head>
 <body>
   <div class="wrap">
-    <h1>${keyword} 추천</h1>
-    <p class="sub">쿠팡 파트너스 API로 실시간 생성된 추천 리스트입니다.</p>
+    <h1>${keyword} · 쿠팡 추천</h1>
+    <p class="sub">아래 상품을 클릭하면 쿠팡 상세페이지로 이동합니다.</p>
     <section class="grid">
-      ${itemsHtml}
+      ${itemsHtml || '<p>상품을 불러오지 못했습니다.</p>'}
     </section>
-    <p style="margin-top:24px;font-size:12px;color:#9ca3af;">
-      이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받을 수 있습니다.
-    </p>
   </div>
 </body>
 </html>`;
@@ -107,10 +118,13 @@ exports.handler = async (event) => {
         return {
             statusCode: 200,
             headers: { 'Content-Type': 'text/html; charset=utf-8' },
-            body: html
+            body: html,
         };
-    } catch (err) {
-        console.error(err);
-        return { statusCode: 500, body: 'internal error' };
+    } catch (e) {
+        console.error(e);
+        return {
+            statusCode: 500,
+            body: 'Internal Server Error',
+        };
     }
 };
