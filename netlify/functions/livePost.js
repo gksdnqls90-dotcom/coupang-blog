@@ -130,7 +130,8 @@ exports.handler = async (event) => {
         console.error(e);
         return {
             statusCode: 500,
-            body: 'Internal Server Error',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+            body: `ERROR:\n${e && e.stack ? e.stack : e}`,
         };
     }
 };
