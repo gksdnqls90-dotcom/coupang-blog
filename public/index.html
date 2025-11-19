@@ -251,6 +251,12 @@
         currentQuery = q;
         searchInput.value = q;
       }
+      // URL 경로로부터 자동 검색 적용 (예: /영양제)
+      const pathSearch = decodeURIComponent(window.location.pathname.replace('/', ''));
+      if (pathSearch && pathSearch.length > 0) {
+        currentQuery = pathSearch;
+        searchInput.value = pathSearch;
+      }
     })();
 
     // 데이터 로딩
