@@ -79,7 +79,11 @@ exports.handler = async (event) => {
                 }
             }
 
-            thumbUrl = best.imageUrl || null;
+            thumbUrl =
+                best.imageUrl ||
+                best.productImage ||          // 쿠팡 API에서 가장 일반적인 필드
+                best.productImageUrl ||
+                null;
             bestProductName = best.productName || null;
         }
     } catch (e) {
