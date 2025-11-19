@@ -1,11 +1,15 @@
 [build]
   publish = "public"
   functions = "netlify/functions"
-   command = "npm run build"
 
 [[redirects]]
   from = "/live/:slug"
   to = "/.netlify/functions/livePost/:slug"
+  status = 200
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/.netlify/functions/sitemap"
   status = 200
 
 [[headers]]
