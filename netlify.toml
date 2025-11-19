@@ -2,22 +2,22 @@
   publish = "public"
   functions = "netlify/functions"
 
-# 1) live 페이지는 항상 함수로
+# 1) /live/:slug 는 반드시 함수로 보내야 한다
 [[redirects]]
   from = "/live/:slug"
-  to   = "/.netlify/functions/livePost/:slug"
+  to = "/.netlify/functions/livePost/:slug"
   status = 200
 
-# 2) sitemap 은 sitemap 함수로
+# 2) sitemap.xml 은 sitemap 함수로
 [[redirects]]
   from = "/sitemap.xml"
-  to   = "/.netlify/functions/sitemap"
+  to = "/.netlify/functions/sitemap"
   status = 200
 
-# 3) 그 밖의 모든 경로는 index.html 로 (키워드용 /영양제 이런 거)
+# 3) SPA 처리 (가장 마지막!!!)
 [[redirects]]
   from = "/*"
-  to   = "/index.html"
+  to = "/index.html"
   status = 200
 
 [[headers]]
