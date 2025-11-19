@@ -1,10 +1,7 @@
 // netlify/functions/deleteKeywords.js
-const { getStore, connectLambda } = require('@netlify/blobs');
+const { getStore } = require('@netlify/blobs');
 
 exports.handler = async (event) => {
-    // ★ Blobs 초기화
-    connectLambda(event);
-
     if (event.httpMethod !== 'POST' && event.httpMethod !== 'DELETE') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
@@ -16,10 +13,15 @@ exports.handler = async (event) => {
         return { statusCode: 400, body: 'id is required' };
     }
 
-    const store = getStore('keywords-store');
-    const list = (await store.get('list', { type: 'json' })) || [];
+    const store = getStore({
+        name: 'keywords',
+        siteID: process.env.NETLIFY_SITE_ID,
+        token: process.env.NETLIFY_API_TOKEN,
+    });
 
+    const list = (await store.get('list', { type: 'json' })) || [];
     const newList = list.filter((item) => item.id !== id);
+
     await store.setJSON('list', newList);
 
     return { statusCode: 200, body: 'OK' };

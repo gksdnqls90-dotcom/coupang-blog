@@ -1,19 +1,23 @@
 // netlify/functions/getKeywords.js
-const { getStore, connectLambda } = require('@netlify/blobs');
+const { getStore } = require('@netlify/blobs');
 
-exports.handler = async (event) => {
-    // ★ Blobs 초기화
-    connectLambda(event);
+exports.handler = async () => {
+    const store = getStore({
+        name: 'keywords',
+        siteID: process.env.NETLIFY_SITE_ID,
+        token: process.env.NETLIFY_API_TOKEN,
+    });
 
-    const store = getStore('keywords-store');
-    const list = (await store.get('list', { type: 'json' })) || [];
+    let list = [];
+    try {
+        list = (await store.get('list', { type: 'json' })) || [];
+    } catch (e) {
+        console.error('blobs get error:', e);
+        list = [];
+    }
 
     return {
         statusCode: 200,
-        headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            'Access-Control-Allow-Origin': '*',
-        },
         body: JSON.stringify(list),
     };
 };

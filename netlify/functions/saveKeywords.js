@@ -5,6 +5,7 @@ const CoupangPartners = require('../../CoupangPartners');
 
 const coupang = new CoupangPartners();
 
+// 슬러그 만들기 (공백 -> 하이픈)
 function makeSlug(keyword) {
     const base = keyword.trim().replace(/\s+/g, '-');
     return encodeURIComponent(base);
@@ -29,7 +30,12 @@ exports.handler = async (event) => {
         return { statusCode: 400, body: 'keyword is required' };
     }
 
-    const store = getStore('keywords-store');
+    // 🔥 Blobs Store 생성 (환경변수로 siteID, token 넘겨줌)
+    const store = getStore({
+        name: 'keywords',                    // 스토어 이름 (마음대로 정한 키)
+        siteID: process.env.NETLIFY_SITE_ID, // Netlify 환경변수
+        token: process.env.NETLIFY_API_TOKEN,
+    });
 
     // 기존 리스트 불러오기 (에러 나면 그냥 빈 배열로)
     let list = [];
