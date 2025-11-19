@@ -16,3 +16,8 @@
   for = "/sitemap.xml"
   [headers.values]
     Content-Type = "application/xml"
+    
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
