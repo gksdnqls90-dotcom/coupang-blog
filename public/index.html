@@ -49,10 +49,33 @@
       padding: 6px 10px;
       border-radius: 999px;
       background: rgba(15, 23, 42, 0.8);
+      white-space: nowrap;
     }
 
     .admin-link:hover {
       background: rgba(79, 70, 229, 0.3);
+    }
+
+    /* 검색 영역 */
+    .search-wrap {
+      max-width: 1080px;
+      margin: 0 auto 18px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid #1e293b;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    .search-input::placeholder {
+      color: #6b7280;
     }
 
     .grid {
@@ -116,20 +139,27 @@
     <div>
       <div class="topbar">icbhplus · 쿠팡 추천 포털</div>
       <h1>쿠팡 추천 리스트</h1>
-      <p class="sub">관리자 페이지에서 키워드를 추가하면 이곳에 자동으로 카드가 생성됩니다.</p>
+      <p class="sub">“요즘 인기 키워드를 검색해 추천 리스트를 확인해보세요.”</p>
     </div>
     <a href="/admin.html" class="admin-link">관리자 페이지 →</a>
   </header>
 
-  <main class="grid" id="cards"></main>
-  <div class="empty" id="emptyMsg" style="display:none;">
-    아직 등록된 키워드가 없습니다. 관리자 페이지에서 첫 키워드를 추가해 보세요.
+  <!-- 검색 영역 -->
+  <div class="search-wrap">
+    <input id="searchInput" class="search-input" type="text" placeholder="키워드 검색 (예: 영양제, 공기청정기, 노트북...)" />
   </div>
+
+  <main class="grid" id="cards"></main>
+  <div class="empty" id="emptyMsg" style="display:none;"></div>
 
   <script>
     const API_BASE = '/.netlify/functions';
     const cardsEl = document.getElementById('cards');
     const emptyMsgEl = document.getElementById('emptyMsg');
+    const searchInput = document.getElementById('searchInput');
+
+    let allKeywords = [];
+    let currentQuery = '';
 
     function createCard(item) {
       const article = document.createElement('article');
@@ -154,28 +184,76 @@
       return article;
     }
 
+    function renderList(list) {
+      cardsEl.innerHTML = '';
+      list.forEach((item) => {
+        cardsEl.appendChild(createCard(item));
+      });
+    }
+
+    function applyFilter() {
+      const q = currentQuery.trim();
+
+      if (!allKeywords.length) {
+        emptyMsgEl.style.display = 'block';
+        emptyMsgEl.textContent = '등록된 키워드가 없습니다. 관리자 페이지에서 첫 키워드를 추가해 보세요.';
+        return;
+      }
+
+      if (!q) {
+        // 검색어 없을 때 전체 목록
+        renderList(allKeywords);
+        emptyMsgEl.style.display = 'none';
+        return;
+      }
+
+      const lowerQ = q.toLowerCase();
+      const filtered = allKeywords.filter((item) =>
+        (item.keyword || '').toLowerCase().includes(lowerQ)
+      );
+
+      if (filtered.length === 0) {
+        cardsEl.innerHTML = '';
+        emptyMsgEl.style.display = 'block';
+        emptyMsgEl.textContent = `"${q}" 에 대한 검색 결과가 없습니다.`;
+      } else {
+        emptyMsgEl.style.display = 'none';
+        renderList(filtered);
+      }
+    }
+
     async function loadKeywords() {
       try {
         const res = await fetch(`${API_BASE}/getKeywords`);
         const list = await res.json();
-        cardsEl.innerHTML = '';
-
-        if (!list.length) {
-          emptyMsgEl.style.display = 'block';
-          return;
-        }
-        emptyMsgEl.style.display = 'none';
-
-        list.forEach((item) => {
-          cardsEl.appendChild(createCard(item));
-        });
+        allKeywords = Array.isArray(list) ? list : [];
+        applyFilter();
       } catch (e) {
         console.error(e);
+        allKeywords = [];
+        cardsEl.innerHTML = '';
         emptyMsgEl.style.display = 'block';
         emptyMsgEl.textContent = '키워드를 불러오는 중 오류가 발생했습니다.';
       }
     }
 
+    // 검색창 입력 이벤트
+    searchInput.addEventListener('input', (e) => {
+      currentQuery = e.target.value;
+      applyFilter();
+    });
+
+    // URL ?q=영양제 이런 식으로 들어온 초기 검색어 처리
+    (function initQueryFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q') || '';
+      if (q) {
+        currentQuery = q;
+        searchInput.value = q;
+      }
+    })();
+
+    // 데이터 로딩
     loadKeywords();
   </script>
 </body>
