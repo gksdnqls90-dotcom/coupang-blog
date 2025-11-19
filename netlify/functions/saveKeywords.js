@@ -5,19 +5,17 @@ const CoupangPartners = require('../../CoupangPartners');
 
 const coupang = new CoupangPartners();
 
-// 슬러그 만들기 (공백 -> 하이픈)
 function makeSlug(keyword) {
     const base = keyword.trim().replace(/\s+/g, '-');
     return encodeURIComponent(base);
 }
 
 exports.handler = async (event) => {
-    // POST 외에는 거절
+    // POST만 허용
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
 
-    // body 파싱
     let body = {};
     try {
         body = JSON.parse(event.body || '{}');
@@ -30,14 +28,14 @@ exports.handler = async (event) => {
         return { statusCode: 400, body: 'keyword is required' };
     }
 
-    // 🔥 Blobs Store 생성 (환경변수로 siteID, token 넘겨줌)
+    // Blobs 스토어
     const store = getStore({
-        name: 'keywords',                    // 스토어 이름 (마음대로 정한 키)
-        siteID: process.env.NETLIFY_SITE_ID, // Netlify 환경변수
+        name: 'keywords',                      // 스토어 이름
+        siteID: process.env.NETLIFY_SITE_ID,   // 환경변수에서 가져옴
         token: process.env.NETLIFY_API_TOKEN,
     });
 
-    // 기존 리스트 불러오기 (에러 나면 그냥 빈 배열로)
+    // 기존 리스트 불러오기
     let list = [];
     try {
         list = (await store.get('list', { type: 'json' })) || [];
@@ -46,19 +44,19 @@ exports.handler = async (event) => {
         list = [];
     }
 
-    // 중복 키워드 방지 (같은 키워드 있으면 에러)
+    // 중복 키워드 방지
     if (list.some((item) => item.keyword === keyword)) {
         return { statusCode: 400, body: 'duplicate keyword' };
     }
 
-    // 🔥 대표 상품 썸네일 추출 (실패해도 키워드는 저장되게 try/catch)
+    // 🔥 쿠팡에서 대표 상품 썸네일 뽑기 (실패해도 키워드는 저장되게)
     let thumbUrl = null;
     let bestProductName = null;
 
     try {
         const raw = await coupang.searchProducts(keyword, 20);
 
-        // 응답 형태가 배열이 아닐 수도 있으니 안전하게 변환
+        // 응답 형태 정규화
         let products = raw;
         if (!Array.isArray(products)) {
             products =
@@ -72,31 +70,28 @@ exports.handler = async (event) => {
             let best = products[0];
 
             for (const p of products) {
-                const reviews = (p.reviewCount ?? p.ratingCount ?? 0);
-                const bestReviews = (best.reviewCount ?? best.ratingCount ?? 0);
+                const reviews = p.reviewCount ?? p.ratingCount ?? 0;
+                const bestReviews = best.reviewCount ?? best.ratingCount ?? 0;
                 if (reviews > bestReviews) {
                     best = p;
                 }
             }
 
-            thumbUrl =
-                best.imageUrl ||
-                best.productImage ||          // 쿠팡 API에서 가장 일반적인 필드
-                best.productImageUrl ||
-                null;
+            thumbUrl = best.imageUrl || null;
             bestProductName = best.productName || null;
         }
     } catch (e) {
         console.error('thumbnail fetch error:', e);
-        // 썸네일 못 구해도 그냥 넘어감
+        // 썸네일 못 구해도 그냥 진행
     }
 
+    // 저장될 아이템
     const item = {
         id: randomUUID(),
         keyword,
         slug: makeSlug(keyword),
-        imageUrl: thumbUrl,      // 인덱스 카드에서 쓸 대표 이미지
-        bestProductName,         // (필요하면 나중에 써먹을 수 있음)
+        imageUrl: thumbUrl,        // 인덱스 카드에서 쓸 대표 이미지
+        bestProductName,           // 나중에 필요하면 사용
     };
 
     // 리스트에 추가 + 저장
