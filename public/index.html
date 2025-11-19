@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>icbhplus · 쿠팡 추천 리스트 자동 모음</title>
+  <title>icbhplus · 쿠팡 추천 리스트 </title>
   <meta name="description" content="쿠팡 파트너스 추천 상품 키워드 모음" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
@@ -250,14 +250,21 @@
       if (q) {
         currentQuery = q;
         searchInput.value = q;
+        return;
       }
-      // URL 경로로부터 자동 검색 적용 (예: /영양제)
-      const pathSearch = decodeURIComponent(window.location.pathname.replace('/', ''));
-      if (pathSearch && pathSearch.length > 0) {
-        currentQuery = pathSearch;
-        searchInput.value = pathSearch;
+
+      // 👇 추가 / 수정된 부분: /live/ 로 시작하면 무시
+      const path = window.location.pathname || '/';
+      if (!path.startsWith('/live/')) {
+        // /영양제, /다이어트-후기 이런 걸 키워드로 사용
+        const segment = decodeURIComponent(path.replace(/^\/+/, '').split('/')[0]);
+        if (segment) {
+          currentQuery = segment;
+          searchInput.value = segment;
+        }
       }
     })();
+
 
     // 데이터 로딩
     loadKeywords();
