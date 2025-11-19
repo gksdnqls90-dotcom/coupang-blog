@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>icbhplus · 쿠팡 추천 리스트 </title>
+  <title>icbhplus · 쿠팡 추천 리스트</title>
   <meta name="description" content="쿠팡 파트너스 추천 상품 키워드 모음" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
@@ -95,6 +95,9 @@
       box-shadow: 0 16px 40px rgba(15, 23, 42, 0.55);
       transition: all 0.18s ease;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .card:hover {
@@ -103,9 +106,17 @@
       border-color: #38bdf8;
     }
 
+    .thumb {
+      width: 100%;
+      height: 140px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #020617;
+    }
+
     .card-title {
       font-size: 16px;
-      margin: 0 0 6px;
+      margin: 0 0 4px;
       color: #e5e7eb;
     }
 
@@ -123,6 +134,7 @@
       font-size: 10px;
       background: rgba(56, 189, 248, 0.12);
       color: #38bdf8;
+      align-self: flex-start;
     }
 
     .empty {
@@ -139,12 +151,11 @@
     <div>
       <div class="topbar">icbhplus · 쿠팡 추천 포털</div>
       <h1>쿠팡 추천 리스트</h1>
-      <p class="sub">“요즘 인기 키워드를 검색해 추천 리스트를 확인해보세요.”</p>
+      <p class="sub">요즘 인기 키워드를 검색해 추천 리스트를 확인해보세요.</p>
     </div>
     <a href="/admin.html" class="admin-link">관리자 페이지 →</a>
   </header>
 
-  <!-- 검색 영역 -->
   <div class="search-wrap">
     <input id="searchInput" class="search-input" type="text" placeholder="키워드 검색 (예: 영양제, 공기청정기, 노트북...)" />
   </div>
@@ -167,7 +178,13 @@
 
       const linkHref = `/live/${item.slug}`;
 
+      // 썸네일이 있는 경우만 이미지 표시
+      const imgHtml = item.imageUrl
+        ? `<img class="thumb" src="${item.imageUrl}" alt="${item.keyword} 대표 상품">`
+        : '';
+
       article.innerHTML = `
+        ${imgHtml}
         <div class="card-title">${item.keyword}</div>
         <a class="card-link" href="${linkHref}" target="_blank" rel="noopener noreferrer">
           바로 보기 →
@@ -175,6 +192,7 @@
         <div class="badge">실시간 생성</div>
       `;
 
+      // 카드 전체 클릭 시 링크 열기
       article.addEventListener('click', (e) => {
         if (e.target.tagName.toLowerCase() !== 'a') {
           window.open(linkHref, '_blank');
@@ -196,12 +214,12 @@
 
       if (!allKeywords.length) {
         emptyMsgEl.style.display = 'block';
-        emptyMsgEl.textContent = '등록된 키워드가 없습니다. 관리자 페이지에서 첫 키워드를 추가해 보세요.';
+        emptyMsgEl.textContent =
+          '등록된 키워드가 없습니다. 관리자 페이지에서 첫 키워드를 추가해 보세요.';
         return;
       }
 
       if (!q) {
-        // 검색어 없을 때 전체 목록
         renderList(allKeywords);
         emptyMsgEl.style.display = 'none';
         return;
@@ -233,7 +251,8 @@
         allKeywords = [];
         cardsEl.innerHTML = '';
         emptyMsgEl.style.display = 'block';
-        emptyMsgEl.textContent = '키워드를 불러오는 중 오류가 발생했습니다.';
+        emptyMsgEl.textContent =
+          '키워드를 불러오는 중 오류가 발생했습니다.';
       }
     }
 
@@ -243,7 +262,7 @@
       applyFilter();
     });
 
-    // URL ?q=영양제 이런 식으로 들어온 초기 검색어 처리
+    // URL에서 초기 검색어 가져오기 (?q=영양제 또는 /영양제)
     (function initQueryFromURL() {
       const params = new URLSearchParams(window.location.search);
       const q = params.get('q') || '';
@@ -253,11 +272,11 @@
         return;
       }
 
-      // 👇 추가 / 수정된 부분: /live/ 로 시작하면 무시
       const path = window.location.pathname || '/';
       if (!path.startsWith('/live/')) {
-        // /영양제, /다이어트-후기 이런 걸 키워드로 사용
-        const segment = decodeURIComponent(path.replace(/^\/+/, '').split('/')[0]);
+        const segment = decodeURIComponent(
+          path.replace(/^\/+/, '').split('/')[0]
+        );
         if (segment) {
           currentQuery = segment;
           searchInput.value = segment;
@@ -265,8 +284,6 @@
       }
     })();
 
-
-    // 데이터 로딩
     loadKeywords();
   </script>
 </body>
