@@ -90,14 +90,15 @@
       position: relative;
       background: #111827;
       border-radius: 16px;
-      padding: 14px;
+      padding: 12px 14px;
       border: 1px solid rgba(148, 163, 253, 0.16);
       box-shadow: 0 16px 40px rgba(15, 23, 42, 0.55);
       transition: all 0.18s ease;
       cursor: pointer;
+
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      gap: 12px;
     }
 
     .card:hover {
@@ -106,17 +107,31 @@
       border-color: #38bdf8;
     }
 
-    .thumb {
-      width: 100%;
-      height: 140px;
+    .card-thumb {
+      width: 64px;
+      height: 64px;
       border-radius: 12px;
-      object-fit: cover;
+      overflow: hidden;
+      flex-shrink: 0;
       background: #020617;
+    }
+
+    .card-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .card-title {
       font-size: 16px;
-      margin: 0 0 4px;
+      margin: 0;
       color: #e5e7eb;
     }
 
@@ -128,7 +143,7 @@
 
     .badge {
       display: inline-block;
-      margin-top: 4px;
+      margin-top: 2px;
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 10px;
@@ -153,6 +168,7 @@
       <h1>쿠팡 추천 리스트</h1>
       <p class="sub">요즘 인기 키워드를 검색해 추천 리스트를 확인해보세요.</p>
     </div>
+    <!-- admin 경로는 실제 배포 파일 이름에 맞춰서 /admin 또는 /admin.html 로 사용 -->
     <a href="/admin.html" class="admin-link">관리자 페이지 →</a>
   </header>
 
@@ -173,23 +189,34 @@
     let currentQuery = '';
 
     function createCard(item) {
+      const keyword = item.keyword || '';
+      const slug = item.slug || '';
+      const imageUrl = item.imageUrl || null;
+
       const article = document.createElement('article');
       article.className = 'card';
 
-      const linkHref = `/live/${item.slug}`;
+      const linkHref = `/live/${encodeURIComponent(slug)}`;
 
-      // 썸네일이 있는 경우만 이미지 표시
-      const imgHtml = item.imageUrl
-        ? `<img class="thumb" src="${item.imageUrl}" alt="${item.keyword} 대표 상품">`
-        : '';
+      // 썸네일이 있는 경우만 이미지 박스 표시
+      let thumbHtml = '';
+      if (imageUrl) {
+        thumbHtml = `
+          <div class="card-thumb">
+            <img src="${imageUrl}" alt="${keyword} 대표 상품" loading="lazy">
+          </div>
+        `;
+      }
 
       article.innerHTML = `
-        ${imgHtml}
-        <div class="card-title">${item.keyword}</div>
-        <a class="card-link" href="${linkHref}" target="_blank" rel="noopener noreferrer">
-          바로 보기 →
-        </a>
-        <div class="badge">실시간 생성</div>
+        ${thumbHtml}
+        <div class="card-body">
+          <div class="card-title">${keyword}</div>
+          <a class="card-link" href="${linkHref}" target="_blank" rel="noopener noreferrer">
+            바로 보기 →
+          </a>
+          <div class="badge">실시간 생성</div>
+        </div>
       `;
 
       // 카드 전체 클릭 시 링크 열기
@@ -213,6 +240,7 @@
       const q = currentQuery.trim();
 
       if (!allKeywords.length) {
+        cardsEl.innerHTML = '';
         emptyMsgEl.style.display = 'block';
         emptyMsgEl.textContent =
           '등록된 키워드가 없습니다. 관리자 페이지에서 첫 키워드를 추가해 보세요.';
@@ -269,17 +297,16 @@
       if (q) {
         currentQuery = q;
         searchInput.value = q;
-        return;
-      }
-
-      const path = window.location.pathname || '/';
-      if (!path.startsWith('/live/')) {
-        const segment = decodeURIComponent(
-          path.replace(/^\/+/, '').split('/')[0]
-        );
-        if (segment) {
-          currentQuery = segment;
-          searchInput.value = segment;
+      } else {
+        const path = window.location.pathname || '/';
+        if (!path.startsWith('/live/')) {
+          const segment = decodeURIComponent(
+            path.replace(/^\/+/, '').split('/')[0]
+          );
+          if (segment) {
+            currentQuery = segment;
+            searchInput.value = segment;
+          }
         }
       }
     })();
