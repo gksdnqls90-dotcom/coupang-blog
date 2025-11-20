@@ -3,117 +3,247 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>icbhplus · 쿠팡 추천 리스트</title>
-  <meta name="description" content="쿠팡 파트너스 추천 상품 키워드 모음" />
+  <title>icbhplus · 쿠팡 추천 키워드 모음</title>
+
+  <meta name="description"
+    content="쿠팡 파트너스 추천 상품 키워드를 모아, 키워드별 인기 상품 리스트를 자동으로 생성해 보여주는 사이트입니다. 원하는 키워드를 검색하고 쿠팡 가격·리뷰를 한 번에 확인하세요." />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="icbhplus · 쿠팡 추천 키워드 모음">
+  <meta property="og:description" content="키워드만 고르면 쿠팡 인기 상품 리스트가 자동으로 생성됩니다. 관심 있는 키워드를 검색해보세요.">
+  <meta property="og:url" content="https://icbhplus.com/">
+
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       margin: 0;
-      padding: 32px;
-      background: #020817;
-      color: #e5e7eb;
+      padding: 32px 20px;
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top, #1f2937 0, #020617 50%),
+        radial-gradient(circle at 120% 120%, #0f172a 0, #020617 60%);
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+
+    @media (min-width: 1024px) {
+      body {
+        padding: 40px;
+      }
     }
 
     header.wrap {
       max-width: 1080px;
-      margin: 0 auto 24px;
+      margin: 0 auto 32px;
+      padding: 22px 24px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(148, 163, 253, 0.5);
+      box-shadow:
+        0 24px 55px rgba(15, 23, 42, 0.88),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       gap: 16px;
     }
 
     .topbar {
-      font-size: 11px;
-      color: #64748b;
-      margin-bottom: 4px;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 8px;
     }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
+      font-size: 30px;
+      margin: 0 0 6px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(120deg, #60a5fa, #a855f7, #f97316);
+      -webkit-background-clip: text;
+      color: transparent;
     }
 
     p.sub {
       margin: 0;
-      font-size: 13px;
+      font-size: 14px;
       color: #9ca3af;
+    }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, rgba(251, 191, 36, 0.35), transparent 60%);
+      border: 1px solid rgba(250, 204, 21, 0.35);
+      color: #facc15;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
 
     .admin-link {
       font-size: 12px;
-      color: #a5b4fc;
+      color: #c7d2fe;
       text-decoration: none;
-      border: 1px solid rgba(129, 140, 248, 0.5);
-      padding: 6px 10px;
+      border: 1px solid rgba(129, 140, 248, 0.7);
+      padding: 8px 14px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.8);
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.4));
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.22s ease;
+    }
+
+    .admin-link::after {
+      content: "↗";
+      font-size: 11px;
     }
 
     .admin-link:hover {
-      background: rgba(79, 70, 229, 0.3);
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.7), rgba(56, 189, 248, 0.5));
+      color: #e5e7eb;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(56, 189, 248, 0.55);
     }
 
-    /* 검색 영역 */
     .search-wrap {
       max-width: 1080px;
-      margin: 0 auto 18px;
+      margin: 0 auto 14px;
     }
 
     .search-input {
       width: 100%;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px solid #1e293b;
-      background: #020617;
-      color: #e5e7eb;
+      padding: 13px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 253, 0.45);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e2e8f0;
       font-size: 14px;
-      box-sizing: border-box;
       outline: none;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+      transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
     }
 
     .search-input::placeholder {
-      color: #6b7280;
+      color: #64748b;
+    }
+
+    .search-input:focus {
+      border-color: #38bdf8;
+      background: rgba(15, 23, 42, 0.96);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.65), 0 18px 40px rgba(15, 23, 42, 1);
+    }
+
+    .view-controls {
+      max-width: 1080px;
+      margin: 0 auto 26px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .view-controls .label {
+      font-size: 12px;
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle at center, #22c55e, #16a34a);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+    }
+
+    .view-btn-group {
+      margin-left: auto;
+      display: inline-flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      padding: 3px;
+      border: 1px solid rgba(148, 163, 253, 0.5);
+    }
+
+    .view-btn {
+      padding: 7px 12px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 64px;
+    }
+
+    .view-btn:hover {
+      background: rgba(148, 163, 253, 0.25);
+    }
+
+    .view-btn.active {
+      background: radial-gradient(circle at top left, #38bdf8, #6366f1);
+      color: white;
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.7);
     }
 
     .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 14px;
       max-width: 1080px;
       margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 18px;
     }
 
     .card {
       position: relative;
-      background: #111827;
-      border-radius: 16px;
-      padding: 12px 14px;
-      border: 1px solid rgba(148, 163, 253, 0.16);
-      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.55);
-      transition: all 0.18s ease;
-      cursor: pointer;
-
+      padding: 16px 15px;
+      border-radius: 20px;
+      border: 1px solid rgba(148, 163, 253, 0.35);
+      background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.55), rgba(15, 23, 42, 0.96));
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.95);
       display: flex;
-      align-items: center;
       gap: 12px;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     }
 
     .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 24px 55px rgba(15, 23, 42, 0.9);
+      transform: translateY(-6px) translateZ(0);
+      box-shadow: 0 22px 55px rgba(15, 23, 42, 1);
       border-color: #38bdf8;
     }
 
     .card-thumb {
-      width: 64px;
-      height: 64px;
-      border-radius: 12px;
+      width: 70px;
+      height: 70px;
+      border-radius: 16px;
       overflow: hidden;
-      flex-shrink: 0;
       background: #020617;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
     }
 
     .card-thumb img {
@@ -126,37 +256,60 @@
     .card-body {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
 
     .card-title {
-      font-size: 16px;
+      font-size: 15px;
+      font-weight: 500;
       margin: 0;
       color: #e5e7eb;
     }
 
     .card-link {
-      font-size: 13px;
-      color: #38bdf8;
+      font-size: 12px;
+      color: #bfdbfe;
       text-decoration: none;
+      margin-top: 2px;
+    }
+
+    .card-link span {
+      font-size: 11px;
+      opacity: 0.8;
     }
 
     .badge {
       display: inline-block;
-      margin-top: 2px;
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 999px;
       font-size: 10px;
-      background: rgba(56, 189, 248, 0.12);
+      background: rgba(56, 189, 248, 0.18);
       color: #38bdf8;
-      align-self: flex-start;
+      margin-top: 4px;
     }
 
     .empty {
       max-width: 1080px;
-      margin: 40px auto;
-      font-size: 13px;
-      color: #9ca3af;
+      margin: 36px auto;
+      font-size: 14px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      header.wrap {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .view-controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .view-btn-group {
+        margin-left: 0;
+      }
     }
   </style>
 </head>
@@ -165,28 +318,59 @@
   <header class="wrap">
     <div>
       <div class="topbar">icbhplus · 쿠팡 추천 포털</div>
-      <h1>쿠팡 추천 리스트</h1>
-      <p class="sub">요즘 인기 키워드를 검색해 추천 리스트를 확인해보세요.</p>
+      <h1>쿠팡 추천 키워드 리스트</h1>
+      <p class="sub">“지금 뭐 살까” 고민될 때, 키워드만 골라서 인기 상품 리스트를 한 번에 확인해보세요.</p>
     </div>
-    <!-- admin 경로는 실제 배포 파일 이름에 맞춰서 /admin 또는 /admin.html 로 사용 -->
-    <a href="/admin.html" class="admin-link">관리자 페이지 →</a>
+    <div class="header-right">
+      <div class="pill">partner feed</div>
+      <a href="/admin.html" class="admin-link">관리자 페이지</a>
+    </div>
   </header>
 
   <div class="search-wrap">
-    <input id="searchInput" class="search-input" type="text" placeholder="키워드 검색 (예: 영양제, 공기청정기, 노트북...)" />
+    <input id="searchInput" class="search-input" type="text" placeholder="키워드 검색 (예: 영양제, 공기청정기, 노트북, 도시락통…)" />
   </div>
 
-  <main class="grid" id="cards"></main>
+  <div class="view-controls">
+    <span class="label">
+      <span class="dot"></span>
+      접속할 때마다 키워드가 랜덤으로 섞여서 보여집니다.
+    </span>
+    <div class="view-btn-group">
+      <button id="view4" class="view-btn">4개</button>
+      <button id="view8" class="view-btn">8개</button>
+      <button id="viewAll" class="view-btn active">전체</button>
+    </div>
+  </div>
+
+  <main>
+    <section class="grid" id="cards" aria-label="추천 키워드 목록"></section>
+  </main>
   <div class="empty" id="emptyMsg" style="display:none;"></div>
 
   <script>
     const API_BASE = '/.netlify/functions';
+
     const cardsEl = document.getElementById('cards');
     const emptyMsgEl = document.getElementById('emptyMsg');
     const searchInput = document.getElementById('searchInput');
 
+    const view4Btn = document.getElementById('view4');
+    const view8Btn = document.getElementById('view8');
+    const viewAllBtn = document.getElementById('viewAll');
+
     let allKeywords = [];
     let currentQuery = '';
+    let viewLimit = null; // 4, 8, 또는 null(전체)
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
 
     function createCard(item) {
       const keyword = item.keyword || '';
@@ -198,7 +382,6 @@
 
       const linkHref = `/live/${slug}`;
 
-      // 썸네일이 있는 경우만 이미지 박스 표시
       let thumbHtml = '';
       if (imageUrl) {
         thumbHtml = `
@@ -206,20 +389,22 @@
             <img src="${imageUrl}" alt="${keyword} 대표 상품" loading="lazy">
           </div>
         `;
+      } else {
+        thumbHtml = `<div class="card-thumb"></div>`;
       }
 
       article.innerHTML = `
         ${thumbHtml}
         <div class="card-body">
-          <div class="card-title">${keyword}</div>
-          <a class="card-link" href="${linkHref}" target="_blank" rel="noopener noreferrer">
-            바로 보기 →
+          <p class="card-title">${keyword}</p>
+          <a class="card-link" href="${linkHref}" title="${keyword} 추천 리스트 상세보기"
+             target="_blank" rel="noopener noreferrer">
+            쿠팡 추천 리스트 보기 <span>↗</span>
           </a>
           <div class="badge">실시간 생성</div>
         </div>
       `;
 
-      // 카드 전체 클릭 시 링크 열기
       article.addEventListener('click', (e) => {
         if (e.target.tagName.toLowerCase() !== 'a') {
           window.open(linkHref, '_blank');
@@ -236,6 +421,20 @@
       });
     }
 
+    function setActiveViewButton() {
+      [view4Btn, view8Btn, viewAllBtn].forEach((btn) =>
+        btn.classList.remove('active')
+      );
+
+      if (viewLimit === 4) {
+        view4Btn.classList.add('active');
+      } else if (viewLimit === 8) {
+        view8Btn.classList.add('active');
+      } else {
+        viewAllBtn.classList.add('active');
+      }
+    }
+
     function applyFilter() {
       const q = currentQuery.trim();
 
@@ -247,25 +446,26 @@
         return;
       }
 
-      if (!q) {
-        renderList(allKeywords);
-        emptyMsgEl.style.display = 'none';
-        return;
+      let source = allKeywords;
+
+      if (q) {
+        const lowerQ = q.toLowerCase();
+        source = allKeywords.filter((item) =>
+          (item.keyword || '').toLowerCase().includes(lowerQ)
+        );
       }
 
-      const lowerQ = q.toLowerCase();
-      const filtered = allKeywords.filter((item) =>
-        (item.keyword || '').toLowerCase().includes(lowerQ)
-      );
-
-      if (filtered.length === 0) {
+      if (!source.length) {
         cardsEl.innerHTML = '';
         emptyMsgEl.style.display = 'block';
         emptyMsgEl.textContent = `"${q}" 에 대한 검색 결과가 없습니다.`;
-      } else {
-        emptyMsgEl.style.display = 'none';
-        renderList(filtered);
+        return;
       }
+
+      emptyMsgEl.style.display = 'none';
+
+      const limited = viewLimit ? source.slice(0, viewLimit) : source;
+      renderList(limited);
     }
 
     async function loadKeywords() {
@@ -273,6 +473,9 @@
         const res = await fetch(`${API_BASE}/getKeywords`);
         const list = await res.json();
         allKeywords = Array.isArray(list) ? list : [];
+
+        allKeywords = shuffle(allKeywords);
+
         applyFilter();
       } catch (e) {
         console.error(e);
@@ -284,13 +487,29 @@
       }
     }
 
-    // 검색창 입력 이벤트
     searchInput.addEventListener('input', (e) => {
       currentQuery = e.target.value;
       applyFilter();
     });
 
-    // URL에서 초기 검색어 가져오기 (?q=영양제 또는 /영양제)
+    view4Btn.addEventListener('click', () => {
+      viewLimit = 4;
+      setActiveViewButton();
+      applyFilter();
+    });
+
+    view8Btn.addEventListener('click', () => {
+      viewLimit = 8;
+      setActiveViewButton();
+      applyFilter();
+    });
+
+    viewAllBtn.addEventListener('click', () => {
+      viewLimit = null;
+      setActiveViewButton();
+      applyFilter();
+    });
+
     (function initQueryFromURL() {
       const params = new URLSearchParams(window.location.search);
       const q = params.get('q') || '';

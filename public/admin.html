@@ -3,15 +3,18 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>icbhplus 관리자</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>icbhplus · 관리자</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
+
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             margin: 0;
-            padding: 32px;
-            background: #020817;
-            color: #e5e7eb;
+            padding: 32px 20px;
+            font-family: "Pretendard", sans-serif;
+            background: radial-gradient(circle at top, #1e293b, #020617 60%);
+            color: #e2e8f0;
         }
 
         .wrap {
@@ -20,85 +23,121 @@
         }
 
         h1 {
-            margin: 0 0 8px;
-            font-size: 24px;
+            font-size: 30px;
+            margin: 0 0 6px;
+            background: linear-gradient(135deg, #60a5fa, #a855f7);
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: 700;
         }
 
         p.sub {
             margin: 0 0 24px;
-            font-size: 13px;
-            color: #9ca3af;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        a.home-btn {
+            display: inline-block;
+            margin-bottom: 22px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            color: #c7d2fe;
+            border: 1px solid rgba(129, 140, 248, 0.55);
+            background: rgba(15, 23, 42, 0.5);
+            transition: 0.2s;
+        }
+
+        a.home-btn:hover {
+            background: rgba(129, 140, 248, 0.4);
+            transform: translateY(-2px);
         }
 
         .box {
-            background: #0b1120;
-            border-radius: 16px;
-            padding: 18px 20px;
-            border: 1px solid rgba(148, 163, 253, 0.3);
-            margin-bottom: 18px;
-        }
-
-        .box-title {
-            font-size: 16px;
-            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 20px 22px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 253, 0.25);
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.7);
         }
 
         label {
             font-size: 13px;
-            display: block;
             margin-bottom: 6px;
+            display: block;
+            color: #cbd5e1;
         }
 
-        input[type="text"],
-        input[type="password"] {
+        input[type="password"],
+        input[type="text"] {
             width: 100%;
-            padding: 8px 10px;
-            border-radius: 10px;
-            border: 1px solid #1f2937;
-            background: #020617;
-            color: #e5e7eb;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 253, 0.35);
+            background: rgba(15, 23, 42, 0.8);
+            color: #e2e8f0;
             font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px #38bdf8;
         }
 
         button {
-            margin-top: 10px;
-            padding: 8px 16px;
+            margin-top: 12px;
+            padding: 10px 18px;
             border-radius: 999px;
             border: none;
-            background: #4f46e5;
-            color: #e5e7eb;
-            font-size: 13px;
             cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            background: linear-gradient(135deg, #6366f1, #38bdf8);
+            color: #fff;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(56, 189, 248, 0.4);
         }
 
         button.danger {
-            background: #b91c1c;
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: default;
+            background: linear-gradient(135deg, #dc2626, #f87171);
+            color: white;
         }
 
         .error {
-            font-size: 12px;
-            color: #f87171;
             margin-top: 6px;
+            font-size: 13px;
+            color: #f87171;
         }
 
         .keyword-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 10px;
-            margin-top: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
         }
 
         .k-card {
-            background: #020617;
-            border-radius: 12px;
-            padding: 10px 12px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 14px 16px;
             border: 1px solid rgba(148, 163, 253, 0.3);
-            font-size: 13px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.8);
+            transition: 0.2s;
+        }
+
+        .k-card:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 14px 34px rgba(56, 189, 248, 0.35);
+            transform: translateY(-3px);
         }
 
         .k-main {
@@ -110,56 +149,38 @@
 
         .k-slug {
             font-size: 11px;
-            color: #9ca3af;
-        }
-
-        .home-btn {
-            font-size: 13px;
-            color: #a5b4fc;
-            text-decoration: none;
-            border: 1px solid rgba(129, 140, 248, 0.5);
-            padding: 6px 12px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.8);
-        }
-
-        .home-btn:hover {
-            background: rgba(79, 70, 229, 0.3);
+            color: #94a3b8;
         }
     </style>
 </head>
 
 <body>
     <div class="wrap">
-        <h1>icbhplus 관리자</h1>
-        <p class="sub">비밀번호를 입력하면 키워드를 관리할 수 있습니다.</p>
-        <div style="margin-bottom: 20px;">
-            <a href="/index.html" class="home-btn">← 홈으로 돌아가기</a>
-        </div>
-        <!-- 비밀번호 입력 박스 -->
+        <h1>관리자 페이지</h1>
+        <p class="sub">키워드를 추가하거나 삭제할 수 있습니다.</p>
+
+        <a href="/index.html" class="home-btn">← 홈으로 돌아가기</a>
+
+        <!-- 로그인 박스 -->
         <div class="box" id="pwBox">
-            <div class="box-title">관리자 로그인</div>
-            <label for="pwInput">비밀번호</label>
-            <input id="pwInput" type="password" placeholder="비밀번호" />
-            <button id="pwBtn">확인</button>
+            <label>관리자 비밀번호</label>
+            <input id="pwInput" type="password" placeholder="비밀번호 입력" />
+            <button id="pwBtn">로그인</button>
             <div class="error" id="pwError" style="display:none;">비밀번호가 올바르지 않습니다.</div>
         </div>
 
-        <!-- 실제 관리 UI -->
+        <!-- 실제 Admin UI -->
         <div id="adminUI" style="display:none;">
-            <!-- 키워드 추가 -->
             <div class="box">
-                <div class="box-title">새 키워드 추가</div>
-                <label for="keywordInput">키워드 (예: 공기청정기 추천)</label>
-                <input id="keywordInput" type="text" placeholder="공기청정기 추천" />
-                <button id="addBtn">추가</button>
+                <label>새 키워드 입력</label>
+                <input id="keywordInput" type="text" placeholder="예: 공기청정기 추천" />
+                <button id="addBtn">키워드 추가</button>
                 <div class="error" id="addError" style="display:none;"></div>
             </div>
 
-            <!-- 등록된 키워드 목록 -->
             <div class="box">
-                <div class="box-title">등록된 키워드 목록</div>
-                <div id="listEmpty" style="font-size:13px; color:#9ca3af;">목록을 불러오는 중입니다…</div>
+                <h3 style="margin:0 0 12px; font-size:16px; color:#cbd5e1;">등록된 키워드</h3>
+                <div id="listEmpty" style="font-size:13px; color:#94a3b8;">불러오는 중…</div>
                 <div class="keyword-list" id="keywordList"></div>
             </div>
         </div>
@@ -181,7 +202,6 @@
         const listEmpty = document.getElementById('listEmpty');
         const keywordList = document.getElementById('keywordList');
 
-        // 로그인
         pwBtn.addEventListener('click', () => {
             if (pwInput.value === ADMIN_PW) {
                 pwError.style.display = 'none';
@@ -193,13 +213,12 @@
             }
         });
 
-        // 키워드 목록 불러오기
         async function loadKeywords() {
-            listEmpty.textContent = '목록을 불러오는 중입니다…';
+            listEmpty.textContent = '불러오는 중…';
             keywordList.innerHTML = '';
             try {
                 const res = await fetch(`${API_BASE}/getKeywords`);
-                const list = await res.json(); // getKeywords는 배열을 바로 리턴함
+                const list = await res.json();
                 if (!list.length) {
                     listEmpty.textContent = '등록된 키워드가 없습니다.';
                     return;
@@ -207,8 +226,7 @@
                 listEmpty.textContent = '';
                 list.forEach((item) => appendKeywordCard(item));
             } catch (e) {
-                console.error(e);
-                listEmpty.textContent = '목록을 불러오는 중 오류가 발생했습니다.';
+                listEmpty.textContent = '불러오기 오류 발생';
             }
         }
 
@@ -216,14 +234,12 @@
             const div = document.createElement('div');
             div.className = 'k-card';
 
-            const liveUrl = `/live/${item.slug}`;
-
             div.innerHTML = `
         <div class="k-main">
           <span>${item.keyword}</span>
           <button class="danger" data-id="${item.id}">삭제</button>
         </div>
-        <div class="k-slug">${liveUrl}</div>
+        <div class="k-slug">/live/${item.slug}</div>
       `;
 
             const delBtn = div.querySelector('button.danger');
@@ -237,23 +253,23 @@
                     });
                     loadKeywords();
                 } catch (e) {
-                    alert('삭제 중 오류가 발생했습니다.');
+                    alert('삭제 오류');
                 }
             });
 
             keywordList.appendChild(div);
         }
 
-        // 키워드 추가
         addBtn.addEventListener('click', async () => {
             const keyword = keywordInput.value.trim();
             if (!keyword) {
-                addError.textContent = '키워드를 입력해 주세요.';
+                addError.textContent = '키워드를 입력하세요.';
                 addError.style.display = 'block';
                 return;
             }
             addError.style.display = 'none';
             addBtn.disabled = true;
+
             try {
                 const res = await fetch(`${API_BASE}/saveKeywords`, {
                     method: 'POST',
@@ -261,22 +277,21 @@
                     body: JSON.stringify({ keyword }),
                 });
                 if (!res.ok) {
-                    const t = await res.text();
-                    addError.textContent = `저장 실패: ${t}`;
+                    addError.textContent = '저장 실패';
                     addError.style.display = 'block';
                 } else {
                     keywordInput.value = '';
-                    await loadKeywords();
+                    loadKeywords();
                 }
             } catch (e) {
-                console.error(e);
-                addError.textContent = '저장 중 오류가 발생했습니다.';
+                addError.textContent = '오류 발생';
                 addError.style.display = 'block';
             } finally {
                 addBtn.disabled = false;
             }
         });
     </script>
+
 </body>
 
 </html>

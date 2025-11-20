@@ -1,159 +1,828 @@
 // netlify/functions/livePost.js
+// ✅ 무료 버전: 쿠팡 상품 + 규칙 기반 카테고리 분류 + 설명문 + FAQ + 해시태그 자동 생성
+
 const CoupangPartners = require('../../CoupangPartners');
 const { getStore, connectLambda } = require('@netlify/blobs');
 
 const coupang = new CoupangPartners();
 
-// Blobs 에서 slug -> keyword 찾기
+// ---------------------------
+// 1. 키워드 -> Blobs 에서 조회
+// ---------------------------
 async function getKeywordFromStore(slug) {
-    const store = getStore('keywords-store');
-    const list = (await store.get('list', { type: 'json' })) || [];
-    const hit = list.find((item) => item.slug === slug);
-    // 없으면 slug 를 디코딩해서 대충 키워드로 사용
-    return hit ? hit.keyword : decodeURIComponent(slug).replace(/-/g, ' ');
+  const store = getStore({
+    name: 'keywords',
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_API_TOKEN,
+  });
+
+  let list = [];
+  try {
+    list = (await store.get('list', { type: 'json' })) || [];
+  } catch (e) {
+    console.error('[livePost] blobs get error:', e);
+    list = [];
+  }
+
+  const hit = list.find((item) => item.slug === slug);
+  return hit ? hit.keyword : decodeURIComponent(slug).replace(/-/g, ' ');
 }
 
+// ---------------------------
+// 2. 연관 키워드(해시태그용) 생성
+// ---------------------------
+function generateRelatedKeywords(keyword) {
+  if (!keyword) return [];
+
+  let base = keyword.trim();
+  // "추천/순위/가성비/후기" 같은 꼬리 제거
+  base = base
+    .replace(
+      /\s*(추천|순위|가성비|비교|후기|리뷰|TOP ?\d+|top ?\d+)\s*$/i,
+      '',
+    )
+    .trim();
+  if (!base) base = keyword.trim();
+
+  const variants = [
+    base,
+    `${base} 추천`,
+    `${base} 가성비`,
+    `${base} 순위`,
+    `${base} 후기`,
+    `${base} 사용 후기`,
+    `${base} 인기 상품`,
+    `${base} 쿠팡`,
+    `${base} 할인`,
+    `${base} 베스트`,
+  ];
+
+  const uniq = [];
+  const seen = new Set();
+  for (const v of variants) {
+    const t = v.trim();
+    if (!t || seen.has(t)) continue;
+    seen.add(t);
+    uniq.push(t);
+  }
+  return uniq.slice(0, 10);
+}
+
+// ---------------------------
+// 3. 카테고리 패턴 (500개 이상 키워드 패턴 분산)
+// ---------------------------
+
+const CATEGORY_PATTERNS = {
+  mobile: [
+    '휴대폰', '스마트폰', '핸드폰', '아이폰', '갤럭시',
+    '케이스', '범퍼케이스', '젤리케이스', '하드케이스',
+    '보호필름', '강화유리', '액정보호', '액정보호필름',
+    '충전기', '고속충전기', '무선충전', '무선충전기', '보조배터리',
+    '충전케이블', 'c타입 케이블', '라이트닝 케이블',
+    '에어팟', '버즈', '블루투스 이어폰', '폴드 케이스', '플립 케이스',
+    '카메라 렌즈 보호', '링케이스', '카드수납 케이스',
+  ],
+  computer: [
+    '노트북', '랩탑', '게이밍 노트북', '맥북',
+    '데스크탑', '본체', 'pc', '게이밍 pc',
+    '모니터', '게이밍 모니터', '커브드 모니터', '27인치', '32인치',
+    '키보드', '기계식 키보드', '무선 키보드', '마우스', '버티컬 마우스',
+    '마우스패드', '손목패드', '노트북 거치대', '쿨링패드',
+    'usb 허브', '허브', 'sd리더기', '저장장치', '외장하드', 'ssd',
+    '공유기', '랜카드', 'iptime', '라우터',
+  ],
+  appliance: [
+    '청소기', '무선청소기', '유선청소기', '로봇청소기',
+    '공기청정기', '가습기', '제습기', '에어컨', '선풍기', '써큘레이터',
+    '전기포트', '전기주전자', '전기밥솥', '압력밥솥',
+    '전자레인지', '오븐', '오븐렌지', '에어프라이어',
+    '히터', '전기난로', '온풍기', '전기장판', '온수매트',
+    '세탁기', '건조기', '식기세척기', '정수기',
+  ],
+  kitchen: [
+    '냄비', '후라이팬', '프라이팬', '웍팬', '궁중팬',
+    '인덕션', '인덕션 프라이팬', '압력솥',
+    '칼', '식도', '주방칼', '칼블럭', '도마',
+    '주방가위', '조리도구', '국자', '주걱', '뒤집개',
+    '그릇', '접시', '식기', '머그컵', '유리컵',
+    '밀폐용기', '락앤락', '글라스락', '반찬통',
+    '커피머신', '커피메이커', '전동 그라인더', '드립포트',
+    '도시락통', '도시락 가방', '보온도시락', '텀블러', '보온병',
+    '식기건조대', '싱크대 선반', '수저통',
+  ],
+  baby: [
+    '아기', '신생아', '육아', '유아', '베이비',
+    '기저귀', '기저귀크림', '물티슈', '엉덩이 물티슈',
+    '젖병', '젖병세정제', '젖병 소독기',
+    '분유', '분유통', '이유식', '이유식 용기', '턱받이',
+    '유모차', '카시트', '아기띠', '힙시트',
+    '손수건', '속싸개', '밤부 손수건',
+    '아기욕조', '목튜브', '기저귀갈이 매트',
+  ],
+  beauty: [
+    '선크림', '자외선차단제', '선블록',
+    '쿠션', '파운데이션', '비비크림', '컨실러',
+    '스킨', '토너', '에센스', '세럼', '앰플', '아이크림',
+    '수분크림', '영양크림', '나이트크림',
+    '립밤', '립스틱', '틴트', '글로스',
+    '클렌징폼', '클렌징오일', '클렌징워터',
+    '마스크팩', '시트팩', '필오프팩',
+    '샴푸', '린스', '트리트먼트', '헤어오일', '헤어에센스',
+    '바디워시', '바디로션', '바디오일', '데오드란트',
+    '향수', '바디미스트',
+  ],
+  fitness: [
+    '요가매트', '요가 매트', '피트니스', '헬스',
+    '덤벨', '바벨', '푸쉬업바', '케틀벨',
+    '폼롤러', '스트레칭 밴드', '탄력밴드', '저항밴드',
+    '풀업바', '철봉', '턱걸이', '홈트',
+    '실내 자전거', '러닝머신', '런닝머신',
+    '헬스장 장갑', '리프팅 스트랩', '헬스 벨트',
+    '워킹화', '러닝화', '트레이닝복', '운동복',
+  ],
+  auto: [
+    '자동차', '차량용', '카용품', '카악세서리',
+    '블랙박스', '네비게이션', '하이패스',
+    '발매트', '코일매트', '트렁크 매트',
+    '핸들커버', '시트커버', '목쿠션', '허리쿠션',
+    '주차번호판', '방향제', '디퓨저', '탈취제',
+    '세차용품', '세차 타월', '물왁스', '타이어 광택제',
+    '차박', '차박 매트', '차박 에어매트',
+  ],
+  toy: [
+    '레고', 'lego', '브릭', '블록장난감',
+    '프라모델', '건담', '건프라', '피규어',
+    '미니카', 'rc카', '라디오컨트롤', '드론',
+    '퍼즐', '직소퍼즐', '보드게임', '젠가', '할리갈리',
+    '인형', '봉제인형', '젤리캣', '곰인형',
+    '슬라임', '키네틱 샌드', '플레이도',
+    '물총', '비치볼', '완구',
+  ],
+  fashion: [
+    '티셔츠', '맨투맨', '후드티', '셔츠', '블라우스',
+    '청바지', '슬랙스', '조거팬츠', '트레이닝복',
+    '패딩', '코트', '점퍼', '바람막이',
+    '원피스', '치마', '스커트',
+    '운동화', '스니커즈', '구두', '샌들', '슬리퍼',
+    '모자', '캡모자', '비니', '버킷햇',
+    '가방', '백팩', '크로스백', '토트백', '에코백',
+    '양말', '스타킹', '레깅스',
+  ],
+  health: [
+    '영양제', '비타민', '멀티비타민',
+    '오메가3', '피쉬오일', '코엔자임q10',
+    '유산균', '프로바이오틱스', '프리바이오틱스',
+    '홍삼', '인삼', '녹용', '콜라겐',
+    '단백질 보충제', '프로틴', '웨이', 'bcaa',
+    '다이어트 보조제', 'cla', '가르시니아',
+    '마그네슘', '아연', '철분', '엽산',
+  ],
+  pet: [
+    '강아지', '고양이', '반려동물',
+    '사료', '간식', '트릿',
+    '고양이모래', '배변패드',
+    '하네스', '목줄', '리드줄',
+    '캣타워', '스크래쳐',
+    '펫 유모차', '펫카시트',
+    '펫샴푸', '펫타월', '발바닥밤',
+  ],
+  furniture: [
+    '책상', '컴퓨터책상', '식탁', '테이블',
+    '의자', '게이밍 의자', '사무용 의자',
+    '소파', '리클라이너', '안락의자',
+    '침대프레임', '수납장', '옷장', '서랍장',
+    '행거', '선반', '수납박스',
+    '책장', '선반장', 'tv장', 'tv다이',
+  ],
+  interior: [
+    '러그', '카페트', '쿠션', '방석',
+    '커튼', '암막커튼', '블라인드',
+    '조명', '스탠드', '무드등', 'led조명',
+    '액자', '포스터', '월데코',
+    '디퓨저', '향초', '캔들',
+    '마크라메', '가랜드',
+  ],
+  outdoor: [
+    '캠핑', '캠핑의자', '캠핑테이블', '폴딩체어',
+    '침낭', '원터치텐트', '돔텐트', '타프', '타프쉘터',
+    '랜턴', '캠핑랜턴', '버너', '코펠', '캠핑쿨러',
+    '등산', '등산스틱', '등산화', '배낭',
+    '자전거', 'mtb', '로드자전거',
+  ],
+  cleaning: [
+    '청소포', '먼지떨이', '밀대', '물걸레',
+    '빗자루', '쓰레받기', '빨래바구니',
+    '세탁세제', '섬유유연제', '표백제',
+    '주방세제', '세탁망', '배수구클리너',
+    '걸레', '행주',
+  ],
+  bedding: [
+    '이불', '차렵이불', '토퍼', '패드',
+    '베개', '기능성 베개', '경추베개',
+    '매트리스', '토퍼 매트리스',
+    '침구세트', '호텔침구',
+    '이불커버', '베개커버',
+  ],
+  food: [
+    '간편식', '밀키트', '도시락',
+    '라면', '컵라면', '과자', '스낵',
+    '견과류', '아몬드', '호두',
+    '커피', '드립백', '캡슐커피',
+    '음료', '탄산음료', '주스', '차', '티백',
+    '시리얼', '오트밀', '프로틴바',
+  ],
+  office: [
+    '볼펜', '연필', '샤프', '형광펜',
+    '노트', '다이어리', '플래너',
+    '파일', '바인더', '클리어파일',
+    '프린터용지', '복사용지', '포스트잇', '메모지',
+    '자석보드', '화이트보드', '보드마카',
+  ],
+  general: [],
+};
+
+// ---------------------------
+// 4. 카테고리별 설명문 / FAQ 템플릿
+// ---------------------------
+
+const EXPLANATION_TEMPLATES = {
+  mobile: (k) =>
+    `${k}를 고를 때는 보호력, 그립감, 두께와 무게를 함께 비교하는 것이 좋습니다. 카메라 범퍼 높이와 무선충전 호환 여부도 체크하면 실제 사용 만족도가 훨씬 높아집니다.`,
+  computer: (k) =>
+    `${k}는 사용 목적(사무용, 게임용, 영상 편집용)에 따라 필요한 사양이 크게 달라집니다. CPU, 메모리, 저장장치뿐 아니라 발열과 소음, AS 정책까지 함께 확인해 보세요.`,
+  appliance: (k) =>
+    `${k}는 소비전력과 소음, 유지비를 함께 고려해서 선택하는 것이 좋습니다. 필터 교체 주기나 추가 소모품 비용, 설치 공간까지 미리 체크하면 실패 확률을 줄일 수 있습니다.`,
+  kitchen: (k) =>
+    `${k}는 재질과 코팅 방식에 따라 내구성과 사용감이 달라집니다. 인덕션 호환 여부, 손잡이 마감, 세척 편의성을 함께 비교해 보면 오래 만족하며 사용할 수 있습니다.`,
+  baby: (k) =>
+    `${k}는 안전성과 성분이 가장 중요한 제품군입니다. KC 인증 여부와 전성분, 향·색소 첨가 여부를 꼼꼼히 확인하고 실제 사용자 후기를 참고해 선택하는 것을 추천드립니다.`,
+  beauty: (k) =>
+    `${k}는 피부 타입과 계절에 따라 어울리는 제품이 달라집니다. 전성분과 발림감, 지속력, 향을 함께 비교해 보고 필요하다면 소용량 제품으로 먼저 테스트해 보는 것도 좋습니다.`,
+  fitness: (k) =>
+    `${k}는 자신의 운동 강도와 체형에 맞게 선택하는 것이 중요합니다. 두께와 쿠션감, 미끄럼 방지 여부, 보관과 이동 편의성을 함께 살펴보면 사용 만족도가 높아집니다.`,
+  auto: (k) =>
+    `${k}는 차량 모델과 실내 인테리어 분위기에 어울리는지, 설치 방식이 간편한지 확인해야 합니다. 여름·겨울 온도 변화에도 버틸 수 있는 내구성과 관리 편의성도 함께 보세요.`,
+  toy: (k) =>
+    `${k}는 연령대에 맞는 난이도와 안전성이 핵심입니다. 작은 부품이 많은지, 조립 난이도는 어떤지, 아이가 흥미를 느낄 만한 테마인지 함께 확인해 보시면 좋습니다.`,
+  fashion: (k) =>
+    `${k}는 체형과 평소 스타일에 맞는 핏을 고르는 것이 중요합니다. 소재 두께와 탄성, 세탁 방법을 확인하고, 리뷰 사진을 참고하면 실제 착용 이미지를 더 쉽게 가늠할 수 있습니다.`,
+  health: (k) =>
+    `${k}는 본인의 컨디션과 기존에 복용 중인 영양제와의 중복 여부를 먼저 확인하는 것이 좋습니다. 1일 권장량과 섭취 시간, 함께 먹으면 좋은 조합까지 체크해 보세요.`,
+  pet: (k) =>
+    `${k}는 반려동물의 나이와 체중, 활동량에 맞게 선택해야 합니다. 주원료와 첨가물, 알레르기 유발 성분 여부를 확인하고, 급여 후 반응을 관찰하면서 천천히 늘려가는 것이 안전합니다.`,
+  furniture: (k) =>
+    `${k}는 실제 방 크기와 동선에 맞는 사이즈를 먼저 확인하는 것이 중요합니다. 재질과 마감, 조립 난이도와 AS 가능 여부까지 살펴보면 오래 사용할 수 있는 선택에 도움이 됩니다.`,
+  interior: (k) =>
+    `${k}는 집의 전체 분위기와 잘 어울리는 컬러와 소재를 고르는 것이 포인트입니다. 관리 난이도와 계절감까지 고려해 작은 아이템부터 천천히 교체해 보는 것도 좋습니다.`,
+  outdoor: (k) =>
+    `${k}는 사용 환경(캠핑, 차박, 등산)에 따라 필요한 스펙이 크게 달라집니다. 방수·방풍 성능과 무게, 수납 사이즈를 함께 비교해 보면 실제 야외에서 더 편하게 사용할 수 있습니다.`,
+  cleaning: (k) =>
+    `${k}는 청소해야 할 공간과 오염 정도에 맞게 선택하는 것이 중요합니다. 재사용 여부와 사용 후 관리 방법, 피부 자극 여부까지 함께 확인해 보세요.`,
+  bedding: (k) =>
+    `${k}는 사용자의 수면 습관과 계절에 따라 재질과 두께를 고르는 것이 좋습니다. 세탁 편의성과 알레르기 유발 여부까지 체크하면 더 편안한 수면 환경을 만들 수 있습니다.`,
+  food: (k) =>
+    `${k}는 유통기한과 보관 방법, 1회 섭취량을 먼저 확인하는 것이 좋습니다. 평소 식습관과 알레르기 여부를 고려하고, 리뷰를 통해 맛과 간을 함께 참고하면 실패를 줄일 수 있습니다.`,
+  office: (k) =>
+    `${k}는 사용 빈도와 작업 스타일에 맞게 선택하는 것이 중요합니다. 그립감과 필기감, 용지 호환성 등을 비교해 보면 장시간 사용에도 덜 피로한 제품을 고를 수 있습니다.`,
+  general: (k) =>
+    `${k}를 선택할 때는 가격뿐 아니라 품질, 리뷰, AS 정책까지 함께 비교하는 것이 좋습니다. 실제 사용자 후기를 살펴보면 장단점을 빠르게 파악할 수 있습니다.`,
+};
+
+const FAQ_TEMPLATES = {
+  mobile: [
+    {
+      q: '케이스는 어떤 기준으로 고르는 게 좋나요?',
+      a: '핸드폰 보호력이 가장 중요하므로 모서리 보호 구조와 카메라 범퍼 높이를 먼저 확인하세요. 그립감과 무게, 무선충전 호환 여부도 함께 보시면 좋습니다.',
+    },
+    {
+      q: '강화유리 필름과 일반 필름의 차이가 뭔가요?',
+      a: '강화유리는 충격과 스크래치에 강하지만 두께감이 있고, 일반 필름은 얇고 가벼운 대신 보호력이 상대적으로 낮습니다. 사용 스타일에 맞게 선택하세요.',
+    },
+    {
+      q: '정품 액세서리를 꼭 써야 하나요?',
+      a: '충전기나 케이블는 안전을 위해 인증 제품을 사용하는 것이 좋습니다. 꼭 정품이 아니더라도 KC 인증 등 안전 인증 여부를 확인해 주세요.',
+    },
+  ],
+  computer: [
+    {
+      q: '사무용 노트북은 어떤 사양이 적당한가요?',
+      a: '문서 작업과 인터넷 위주라면 i5/16GB RAM/SSD 256GB 정도면 충분합니다. 프로그램을 많이 띄워두는 편이라면 메모리를 16GB 이상으로 선택하는 것이 좋습니다.',
+    },
+    {
+      q: '게이밍용 모니터는 무엇을 봐야 하나요?',
+      a: '주로 주사율(Hz)과 응답속도(ms)를 체크합니다. FPS 게임 위주라면 144Hz 이상 제품을 추천하며, 그래픽 작업이 많다면 색재현율도 함께 확인하세요.',
+    },
+    {
+      q: '노트북 거치대를 사용하는 이유가 뭔가요?',
+      a: '거치대를 사용하면 화면 높이가 올라가 목과 어깨에 부담이 줄어들고, 하단 통풍이 좋아져 발열 관리에도 도움이 됩니다.',
+    },
+  ],
+  kitchen: [
+    {
+      q: '프라이팬은 어떤 재질이 좋나요?',
+      a: '자주 사용하는 가정용은 코팅팬이 편리하지만, 내구성을 중시한다면 스테인리스나 무쇠팬도 고려할 수 있습니다. 인덕션 사용 여부에 따라 호환 가능한 제품을 선택하세요.',
+    },
+    {
+      q: '인덕션 사용 가능한지 어떻게 알 수 있나요?',
+      a: '대부분 바닥에 인덕션 표시가 있거나 상세페이지에 IH 호환 여부가 적혀 있습니다. 자성이 있는 평평한 바닥의 제품이면 대부분 인덕션 사용이 가능합니다.',
+    },
+    {
+      q: '밀폐용기는 어떤 점을 보면 좋나요?',
+      a: '전자레인지 사용 가능 여부, 뚜껑 밀폐력, 재질(BPA free 등)을 확인하세요. 쌓아서 보관하기 쉬운 규격인지도 중요합니다.',
+    },
+  ],
+  toy: [
+    {
+      q: '레고/블록 제품은 몇 살부터 가능한가요?',
+      a: '제품마다 권장 연령이 다르기 때문에 상세페이지의 연령 표기를 꼭 확인하세요. 작은 부품이 많은 제품은 8세 이상 권장인 경우가 많습니다.',
+    },
+    {
+      q: '조립 난이도는 어디서 확인할 수 있나요?',
+      a: '조각 수와 상품 설명, 리뷰를 통해 대략적인 난이도를 가늠할 수 있습니다. 초보자라면 조각 수가 너무 많은 제품은 피하는 것이 좋습니다.',
+    },
+    {
+      q: '정품과 호환 블록의 차이는 뭔가요?',
+      a: '정품은 결합력과 마감 퀄리티가 안정적인 편입니다. 호환 블록은 가격이 저렴한 대신 결합감이나 색감에서 차이가 있을 수 있으니 리뷰를 꼭 확인하세요.',
+    },
+  ],
+  general: [
+    {
+      q: '온라인으로 구매할 때 어떤 점을 먼저 봐야 하나요?',
+      a: '가격과 함께 리뷰 수, 평점, 최근 리뷰 내용을 먼저 확인하는 것이 좋습니다. 실제 사용자의 사진 리뷰가 많은 제품을 우선적으로 살펴보세요.',
+    },
+    {
+      q: '교환·반품은 어떻게 확인하나요?',
+      a: '상세페이지 하단의 교환/반품 안내를 확인하고, 단순 변심 시에도 가능한지, 왕복 택배비는 얼마인지 미리 확인해 두면 좋습니다.',
+    },
+    {
+      q: '최저가만 보고 선택해도 괜찮을까요?',
+      a: '너무 저렴한 상품은 품질이나 배송, AS에서 아쉬울 수 있습니다. 가격과 더불어 판매자 신뢰도와 리뷰를 함께 비교해 보는 것이 안전합니다.',
+    },
+  ],
+};
+
+// ---------------------------
+// 5. 규칙 기반 카테고리 분류
+// ---------------------------
+function classifyCategory(keyword, products) {
+  const textParts = [];
+  if (keyword) textParts.push(keyword);
+
+  if (Array.isArray(products)) {
+    for (const p of products) {
+      if (p.productName) textParts.push(p.productName);
+      if (p.categoryName) textParts.push(p.categoryName);
+    }
+  }
+
+  const text = textParts.join(' ').toLowerCase();
+
+  let bestCategory = 'general';
+  let bestScore = 0;
+
+  for (const [cat, patterns] of Object.entries(CATEGORY_PATTERNS)) {
+    if (!patterns || !patterns.length) continue;
+    let score = 0;
+    for (const pat of patterns) {
+      const token = String(pat || '').toLowerCase();
+      if (!token) continue;
+      if (text.includes(token)) score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestCategory = cat;
+    }
+  }
+
+  if (bestScore === 0) return 'general';
+  return bestCategory;
+}
+
+// ---------------------------
+// 6. HTML 이스케이프
+// ---------------------------
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ---------------------------
+// 7. Lambda Handler
+// ---------------------------
 exports.handler = async (event) => {
-    try {
-        // Netlify Blobs 초기화 (Lambda 모드)
-        connectLambda(event);
+  try {
+    // Netlify Blobs 초기화
+    connectLambda(event);
 
-        // 1순위: ?slug=..., 2순위: path 마지막 segment
-        let slug =
-            (event.queryStringParameters && event.queryStringParameters.slug) ||
-            (event.path || '').split('/').pop();
+    // slug 결정: ?slug=... 우선, 없으면 path 마지막 segment
+    let slug =
+      (event.queryStringParameters && event.queryStringParameters.slug) ||
+      (event.path || '').split('/').pop();
 
-        if (!slug || slug === 'livePost') {
-            return {
-                statusCode: 400,
-                headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-                body: 'slug is required',
-            };
-        }
+    if (!slug || slug === 'livePost') {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        body: 'slug is required',
+      };
+    }
 
-        const keyword = await getKeywordFromStore(slug);
+    const keyword = await getKeywordFromStore(slug);
 
-        // 🔥 쿠팡 API 호출 (generatePost.js 와 동일한 패턴)
-        const res = await coupang.searchProducts(keyword, 10);
+    // 쿠팡 API 호출
+    const res = await coupang.searchProducts(keyword);
 
-        if (!res || res.rCode !== '0') {
-            throw new Error(
-                `Coupang API error: ${res && (res.rMessage || res.message || res.rCode)}`
-            );
-        }
+    if (!res || res.rCode !== '0') {
+      throw new Error(
+        `Coupang API error: ${res && (res.rMessage || res.message || res.rCode)
+        }`,
+      );
+    }
 
-        const products = (res.data && res.data.productData) || [];
-        if (!Array.isArray(products) || products.length === 0) {
-            throw new Error('상품 데이터가 없습니다.');
-        }
+    const products = (res.data && res.data.productData) || [];
+    if (!Array.isArray(products) || products.length === 0) {
+      throw new Error('상품 데이터가 없습니다.');
+    }
 
-        const itemsHtml = products
-            .map(
-                (p) => `
-        <article class="item">
-          <a href="${p.productUrl}" target="_blank" rel="nofollow noopener">
-            <img src="${p.productImage}" alt="${p.productName}">
-            <h2>${p.rank}. ${p.productName}</h2>
-            <p class="price">${p.productPrice.toLocaleString()}원</p>
+    const firstImage = products[0]?.productImage || '';
+    const baseUrl = process.env.URL || 'https://icbhplus.com';
+    const canonicalUrl = `${baseUrl.replace(/\/+$/, '')}/live/${encodeURIComponent(
+      slug,
+    )}`;
+
+    const pageTitle = `${keyword} 추천 TOP10 · 쿠팡 인기상품 리스트`;
+    const metaDescription = `${keyword} 관련 최신 인기 상품 TOP10을 쿠팡 API 기반으로 자동 정리했습니다. 가격, 배송, 카테고리 정보를 한눈에 비교해 보세요.`;
+
+    const relatedKeywords = generateRelatedKeywords(keyword);
+    const metaKeywords = relatedKeywords.join(', ').replace(/"/g, "'");
+
+    // 카테고리 자동 분류
+    const category = classifyCategory(keyword, products);
+
+    // 설명문/FAQ 생성
+    const explanationFn =
+      EXPLANATION_TEMPLATES[category] || EXPLANATION_TEMPLATES.general;
+    const explanation = explanationFn(keyword);
+
+    const faqs =
+      FAQ_TEMPLATES[category] ||
+      FAQ_TEMPLATES.general ||
+      [
+        {
+          q: `${keyword}는 어떤 기준으로 고르면 좋을까요?`,
+          a: '예산을 정한 뒤 주요 스펙과 실제 사용자 리뷰를 함께 비교해 보시는 것을 추천드립니다.',
+        },
+        {
+          q: `구매 전 꼭 확인해야 할 점이 있나요?`,
+          a: '배송 옵션, 교환·반품 정책, AS 가능 여부를 미리 확인해 두면 예상치 못한 불편을 줄일 수 있습니다.',
+        },
+        {
+          q: `온라인 구매가 오프라인보다 불리하진 않나요?`,
+          a: '상세 사진과 리뷰를 충분히 확인하고, 신뢰도 높은 판매자를 선택하면 오프라인보다 더 편리하게 구매할 수 있습니다.',
+        },
+      ];
+
+    // 상품 카드 HTML
+    const itemsHtml = products
+      .map((p, idx) => {
+        const name = p.productName || '상품명 없음';
+        const url = p.productUrl || '#';
+        const image = p.productImage || '';
+        const rank = p.rank || idx + 1;
+        const priceNum =
+          typeof p.productPrice === 'number'
+            ? p.productPrice
+            : Number(p.productPrice || 0);
+        const priceTxt = priceNum ? `${priceNum.toLocaleString()}원` : '';
+        const isRocket = p.isRocket;
+        const isFree = p.isFreeShipping;
+        const categoryName = p.categoryName || '';
+
+        return `
+        <a class="card" href="${url}" target="_blank" rel="nofollow noopener">
+          <div class="thumb">
+            ${image
+            ? `<img src="${image}" alt="${escapeHtml(
+              name,
+            )}" loading="lazy">`
+            : ''
+          }
+          </div>
+          <div class="info">
+            <div class="rank">TOP ${rank}</div>
+            <h2 class="title">${escapeHtml(name)}</h2>
+            ${priceTxt ? `<p class="price">${priceTxt}</p>` : ''}
             <p class="meta">
-              ${p.isRocket ? '🚀 로켓배송' : '📦 일반배송'}
-              ${p.isFreeShipping ? ' · 무료배송 가능' : ''}
-              ${p.categoryName ? ` · ${p.categoryName}` : ''}
+              ${isRocket ? '🚀 로켓배송' : '📦 일반배송'}
+              ${isFree ? ' · 무료배송 가능' : ''}
+              ${categoryName ? ` · ${escapeHtml(categoryName)}` : ''}
             </p>
-          </a>
-        </article>
-      `
-            )
-            .join('');
+            <div class="btn-like">쿠팡에서 상세보기 ↗</div>
+          </div>
+        </a>
+      `;
+      })
+      .join('');
 
-        const html = `<!DOCTYPE html>
+    // 태그 / 설명 / FAQ 섹션
+    const tagsHtml = relatedKeywords.length
+      ? `
+      <section class="tags" aria-label="${escapeHtml(keyword)} 연관 키워드">
+        <h2 class="section-title">연관 키워드 · 해시태그</h2>
+        <div class="tag-list">
+          ${relatedKeywords
+        .map((t) => `<span class="tag">#${escapeHtml(t)}</span>`)
+        .join(' ')}
+        </div>
+      </section>
+    `
+      : '';
+
+    const explanationHtml = `
+      <section class="explain" aria-label="${escapeHtml(
+      keyword,
+    )} 쇼핑 가이드">
+        <h2 class="section-title">구매 전 간단 체크포인트</h2>
+        <p>${escapeHtml(explanation)}</p>
+      </section>
+    `;
+
+    const faqHtml = `
+      <section class="faq" aria-label="${escapeHtml(keyword)} 자주 묻는 질문">
+        <h2 class="section-title">자주 묻는 질문(FAQ)</h2>
+        <ul>
+          ${faqs
+        .slice(0, 3)
+        .map(
+          (f) => `
+            <li>
+              <strong>${escapeHtml(f.q)}</strong><br>
+              <span>${escapeHtml(f.a)}</span>
+            </li>
+          `,
+        )
+        .join('')}
+        </ul>
+      </section>
+    `;
+
+    // 최종 HTML
+    const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>${keyword} · 쿠팡 추천</title>
+  <title>${escapeHtml(pageTitle)}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="${escapeHtml(metaDescription)}">
+  ${metaKeywords
+        ? `<meta name="keywords" content="${escapeHtml(metaKeywords)}">`
+        : ''
+      }
+  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="${escapeHtml(pageTitle)}">
+  <meta property="og:description" content="${escapeHtml(metaDescription)}">
+  <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
+  ${firstImage ? `<meta property="og:image" content="${firstImage}">` : ''}
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(pageTitle)}">
+  <meta name="twitter:description" content="${escapeHtml(metaDescription)}">
+  ${firstImage ? `<meta name="twitter:image" content="${firstImage}">` : ''}
   <style>
+    * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       margin: 0;
-      padding: 24px;
-      background: #020817;
+      padding: 26px 18px 32px;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top, #1e293b 0, #020617 55%),
+        radial-gradient(circle at 120% 120%, #0f172a 0, #020617 60%);
       color: #e5e7eb;
     }
-    .wrap {
-      max-width: 1080px;
-      margin: 0 auto;
+    @media (min-width: 960px) {
+      body { padding: 32px 24px 40px; }
     }
+    .wrap { max-width: 1080px; margin: 0 auto; }
+    header { margin-bottom: 22px; }
     h1 {
-      font-size: 22px;
       margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #60a5fa, #a855f7);
+      -webkit-background-clip: text;
+      color: transparent;
     }
     p.sub {
-      margin: 0 0 16px;
-      font-size: 13px;
-      color: #9ca3af;
+      margin: 0;
+      font-size: 14px;
+      color: #94a3b8;
     }
+
+    .section-title {
+      margin: 18px 0 10px;
+      font-size: 16px;
+      color: #cbd5e1;
+    }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 18px;
     }
-    .item {
-      background: #111827;
-      border-radius: 14px;
-      padding: 10px;
-      border: 1px solid rgba(148, 163, 253, 0.2);
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.6);
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      border-radius: 20px;
+      text-decoration: none;
+      color: inherit;
+      background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.65), rgba(15, 23, 42, 0.96));
+      border: 1px solid rgba(148, 163, 253, 0.55);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.95);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     }
-    img {
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 22px 55px rgba(15, 23, 42, 1);
+      border-color: #38bdf8;
+    }
+
+    .thumb {
       width: 100%;
-      border-radius: 8px;
-      display: block;
-      margin-bottom: 6px;
+      aspect-ratio: 4 / 3;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #020617;
+      margin-bottom: 10px;
     }
-    h2 {
-      font-size: 13px;
-      margin: 0 0 4px;
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-height: 110px;
+    }
+    .rank {
+      font-size: 11px;
+      color: #a5b4fc;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
       color: #e5e7eb;
+      line-height: 1.4;
     }
     .price {
-      font-size: 13px;
-      color: #f97316;
-      margin: 0 0 4px;
+      margin: 4px 0 2px;
+      font-size: 14px;
+      color: #fb923c;
+      font-weight: 600;
     }
     .meta {
-      font-size: 11px;
-      color: #9ca3af;
       margin: 0;
+      font-size: 12px;
+      color: #cbd5e1;
     }
-    a {
-      color: inherit;
+    .btn-like {
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: linear-gradient(135deg, #6366f1, #38bdf8);
+      color: #f9fafb;
+      box-shadow: 0 12px 28px rgba(56, 189, 248, 0.5);
+    }
+
+    .explain, .faq, .tags {
+      margin-top: 22px;
+      padding: 16px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,253,0.35);
+      background: rgba(15,23,42,0.9);
+      box-shadow: 0 14px 32px rgba(15,23,42,0.9);
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    .explain p {
+      margin: 0 0 8px;
+      line-height: 1.6;
+    }
+
+    .tags {
+      padding-bottom: 12px;
+    }
+    .tag-list {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 253, 0.45);
+      color: #cbd5e1;
+    }
+
+    .faq ul {
+      margin: 4px 0 0;
+      padding-left: 18px;
+    }
+    .faq li {
+      margin-bottom: 6px;
+    }
+
+    footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .back {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #cbd5e1;
       text-decoration: none;
+      opacity: 0.85;
+    }
+    .back:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .explain, .faq, .tags {
+        padding: 14px 12px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>${keyword} · 쿠팡 추천</h1>
-    <p class="sub">아래 상품을 클릭하면 쿠팡 상세페이지로 이동합니다.</p>
-    <section class="grid">
-      ${itemsHtml}
-    </section>
+    <header>
+      <h1>${escapeHtml(keyword)} 추천 TOP10 · 쿠팡 인기상품</h1>
+      <p class="sub">아래 카드 중 하나를 선택하면 쿠팡 상세 페이지로 이동합니다. 쿠팡 파트너스 활동으로 일정 수수료를 받을 수 있습니다.</p>
+    </header>
+
+    <main>
+      <h2 class="section-title">${escapeHtml(
+        keyword,
+      )} 추천 상품 한눈에 보기</h2>
+      <section class="grid" aria-label="${escapeHtml(
+        keyword,
+      )} 추천 상품 목록">
+        ${itemsHtml}
+      </section>
+
+      ${explanationHtml}
+      ${tagsHtml}
+      ${faqHtml}
+    </main>
+
+    <footer>
+      <a class="back" href="/">← 다른 키워드 보러가기</a>
+      <div>※ 이 페이지는 쿠팡 파트너스 활동의 일환으로, 일정 수수료를 받을 수 있습니다.</div>
+    </footer>
   </div>
 </body>
 </html>`;
 
-        return {
-            statusCode: 200,
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
-            body: html,
-        };
-    } catch (e) {
-        console.error(e);
-        return {
-            statusCode: 500,
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-            body: `ERROR:\n${e && e.stack ? e.stack : e}`,
-        };
-    }
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      body: html,
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      body: `ERROR:\n${e && e.stack ? e.stack : e}`,
+    };
+  }
 };

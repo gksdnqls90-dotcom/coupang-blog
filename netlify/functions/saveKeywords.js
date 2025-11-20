@@ -1,6 +1,6 @@
 // netlify/functions/saveKeywords.js
 
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 const { randomUUID } = require('crypto');
 const CoupangPartners = require('../../CoupangPartners');
 
@@ -12,9 +12,16 @@ function makeSlug(keyword) {
 }
 
 exports.handler = async (event) => {
+    // Blobs 초기화 (netlify dev / lambda 환경용)
+    connectLambda(event);
+
     // POST 외에는 거절
     if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
+        return {
+            statusCode: 405,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+            body: 'Method Not Allowed',
+        };
     }
 
     // body 파싱
@@ -22,12 +29,20 @@ exports.handler = async (event) => {
     try {
         body = JSON.parse(event.body || '{}');
     } catch (e) {
-        return { statusCode: 400, body: 'invalid json' };
+        return {
+            statusCode: 400,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+            body: 'invalid json',
+        };
     }
 
     const keyword = (body.keyword || '').trim();
     if (!keyword) {
-        return { statusCode: 400, body: 'keyword is required' };
+        return {
+            statusCode: 400,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+            body: 'keyword is required',
+        };
     }
 
     // Blobs 스토어 핸들
@@ -46,9 +61,21 @@ exports.handler = async (event) => {
         list = [];
     }
 
-    // 중복 키워드 방지
-    if (list.some((item) => item.keyword === keyword)) {
-        return { statusCode: 400, body: 'duplicate keyword' };
+    if (!Array.isArray(list)) list = [];
+
+    // 중복 키워드 방지(키워드 기준)
+    const exist = list.find((item) => item.keyword === keyword);
+    if (exist) {
+        // ➜ 더 이상 400 말고 200 + duplicated 플래그
+        return {
+            statusCode: 200,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            body: JSON.stringify({
+                ok: true,
+                duplicated: true,
+                item: exist,
+            }),
+        };
     }
 
     // 🔥 대표 상품 썸네일 추출 (실패해도 키워드는 저장되게 try/catch)
@@ -57,17 +84,12 @@ exports.handler = async (event) => {
 
     try {
         const raw = await coupang.searchProducts(keyword);
-
         console.log(
             '[saveKeywords] coupang raw sample:',
             JSON.stringify(raw).slice(0, 1500)
         );
 
-        // rCode 체크: 에러면 바로 패스
-        if (raw.rCode !== '0') {
-            console.log('[saveKeywords] coupang api error:', raw.rMessage);
-        } else {
-            // 정상일 때 data.productData 에서 상품 배열 꺼내기
+        if (raw && raw.rCode === '0') {
             let products = [];
 
             if (raw.data && Array.isArray(raw.data.productData)) {
@@ -96,6 +118,11 @@ exports.handler = async (event) => {
 
                 bestProductName = best.productName ?? best.itemName ?? null;
             }
+        } else {
+            console.log(
+                '[saveKeywords] coupang api error:',
+                raw && (raw.rMessage || raw.message || raw.rCode)
+            );
         }
 
         console.log('[saveKeywords] thumbnail selected:', {
@@ -113,6 +140,7 @@ exports.handler = async (event) => {
         slug: makeSlug(keyword),
         imageUrl: thumbUrl, // 인덱스에서 쓸 이미지
         bestProductName,
+        createdAt: new Date().toISOString(),
     };
 
     // 리스트에 추가 + 저장
@@ -121,12 +149,16 @@ exports.handler = async (event) => {
         await store.setJSON('list', list);
     } catch (e) {
         console.error('[saveKeywords] blobs set error:', e);
-        return { statusCode: 500, body: 'blob save error' };
+        return {
+            statusCode: 500,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+            body: 'blob save error',
+        };
     }
 
     return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify(item),
+        body: JSON.stringify({ ok: true, duplicated: false, item }),
     };
 };
