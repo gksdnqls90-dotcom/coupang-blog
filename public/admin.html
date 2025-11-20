@@ -263,10 +263,11 @@
         addBtn.addEventListener('click', async () => {
             const keyword = keywordInput.value.trim();
             if (!keyword) {
-                addError.textContent = '키워드를 입력하세요.';
+                addError.textContent = '키워드를 입력해 주세요.';
                 addError.style.display = 'block';
                 return;
             }
+
             addError.style.display = 'none';
             addBtn.disabled = true;
 
@@ -276,20 +277,35 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ keyword }),
                 });
-                if (!res.ok) {
-                    addError.textContent = '저장 실패';
+
+                const data = await res.json();
+
+                // 🔥 중복 키워드 처리
+                if (data.duplicated) {
+                    addError.textContent = '이미 등록된 키워드입니다.';
                     addError.style.display = 'block';
-                } else {
-                    keywordInput.value = '';
-                    loadKeywords();
+                    return;
                 }
+
+                // 서버에서 에러 응답 (400 등)
+                if (!res.ok) {
+                    addError.textContent = `저장 실패: ${data}`;
+                    addError.style.display = 'block';
+                    return;
+                }
+
+                keywordInput.value = '';
+                await loadKeywords();
+
             } catch (e) {
-                addError.textContent = '오류 발생';
+                console.error(e);
+                addError.textContent = '저장 중 오류가 발생했습니다.';
                 addError.style.display = 'block';
             } finally {
                 addBtn.disabled = false;
             }
         });
+
     </script>
 
 </body>
