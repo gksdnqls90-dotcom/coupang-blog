@@ -1,4 +1,5 @@
 // netlify/functions/getKeywords.js
+
 const { getStore } = require('@netlify/blobs');
 
 exports.handler = async () => {
@@ -12,16 +13,13 @@ exports.handler = async () => {
     try {
         list = (await store.get('list', { type: 'json' })) || [];
     } catch (e) {
-        console.error('blobs get error:', e);
+        console.error('[getKeywords] blobs get error:', e);
         list = [];
     }
 
     return {
         statusCode: 200,
-        headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            'Access-Control-Allow-Origin': '*',
-        },
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify(list),
     };
 };

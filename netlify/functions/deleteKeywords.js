@@ -1,14 +1,21 @@
 // netlify/functions/deleteKeywords.js
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 
 exports.handler = async (event) => {
+    connectLambda(event);
+
     if (event.httpMethod !== 'POST' && event.httpMethod !== 'DELETE') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
 
-    const body = JSON.parse(event.body || '{}');
-    const id = body.id;
+    let body;
+    try {
+        body = JSON.parse(event.body || '{}');
+    } catch (e) {
+        return { statusCode: 400, body: 'invalid json' };
+    }
 
+    const id = body.id;
     if (!id) {
         return { statusCode: 400, body: 'id is required' };
     }
@@ -19,10 +26,20 @@ exports.handler = async (event) => {
         token: process.env.NETLIFY_API_TOKEN,
     });
 
-    const list = (await store.get('list', { type: 'json' })) || [];
-    const newList = list.filter((item) => item.id !== id);
+    let list = (await store.get('list', { type: 'json' })) || [];
+    if (!Array.isArray(list)) list = [];
 
-    await store.setJSON('list', newList);
+    const beforeLen = list.length;
+    list = list.filter((item) => item.id !== id);
+    const deleted = beforeLen !== list.length;
 
-    return { statusCode: 200, body: 'OK' };
+    await store.setJSON('list', list);
+
+    console.log('[deleteKeywords] deleted:', deleted, 'id:', id);
+
+    return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ ok: true, deleted }),
+    };
 };

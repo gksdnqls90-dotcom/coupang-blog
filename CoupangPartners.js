@@ -1,10 +1,14 @@
+// CoupangPartners.js
+
 const crypto = require('crypto');
 const axios = require('axios');
-require('dotenv').config();
 
 const ACCESS_KEY = process.env.CP_ACCESS_KEY;
 const SECRET_KEY = process.env.CP_SECRET_KEY;
 const DOMAIN = 'https://api-gateway.coupang.com';
+
+// 👉 이 값만 안전하게 10으로 고정 (계정별 허용 limit 이 10까지인 듯)
+const SAFE_LIMIT = 10;
 
 function generateHmac(method, uri, accessKey, secretKey) {
     const [path, query = ''] = uri.split('?');
@@ -31,20 +35,26 @@ function generateHmac(method, uri, accessKey, secretKey) {
 class CoupangPartners {
     constructor() {
         if (!ACCESS_KEY || !SECRET_KEY) {
-            throw new Error('CP_ACCESS_KEY 또는 CP_SECRET_KEY가 없습니다. .env를 확인하세요.');
+            throw new Error(
+                'CP_ACCESS_KEY 또는 CP_SECRET_KEY가 없습니다. Netlify 환경변수(.env) 확인해주세요.'
+            );
         }
         this.accessKey = ACCESS_KEY;
         this.secretKey = SECRET_KEY;
     }
 
-    async searchProducts(keyword, limit = 10) {
-        if (!limit || limit < 1 || limit > 100) limit = 10;
-
+    async searchProducts(keyword) {
+        // limit 은 안전하게 10 고정
         const uri =
-            `/v2/providers/affiliate_open_api/apis/openapi/products/search` +
-            `?keyword=${encodeURIComponent(keyword)}&limit=${limit}`;
+            '/v2/providers/affiliate_open_api/apis/openapi/products/search' +
+            `?keyword=${encodeURIComponent(keyword)}&limit=${SAFE_LIMIT}`;
 
-        const authorization = generateHmac('GET', uri, this.accessKey, this.secretKey);
+        const authorization = generateHmac(
+            'GET',
+            uri,
+            this.accessKey,
+            this.secretKey
+        );
 
         const res = await axios.get(`${DOMAIN}${uri}`, {
             headers: {
@@ -52,6 +62,7 @@ class CoupangPartners {
                 'Content-Type': 'application/json',
             },
         });
+
         return res.data;
     }
 }

@@ -1,4 +1,5 @@
 // netlify/functions/saveKeywords.js
+
 const { getStore } = require('@netlify/blobs');
 const { randomUUID } = require('crypto');
 const CoupangPartners = require('../../CoupangPartners');
@@ -11,11 +12,12 @@ function makeSlug(keyword) {
 }
 
 exports.handler = async (event) => {
-    // POST만 허용
+    // POST 외에는 거절
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
 
+    // body 파싱
     let body = {};
     try {
         body = JSON.parse(event.body || '{}');
@@ -28,10 +30,10 @@ exports.handler = async (event) => {
         return { statusCode: 400, body: 'keyword is required' };
     }
 
-    // Blobs 스토어
+    // Blobs 스토어 핸들
     const store = getStore({
-        name: 'keywords',                      // 스토어 이름
-        siteID: process.env.NETLIFY_SITE_ID,   // 환경변수에서 가져옴
+        name: 'keywords',
+        siteID: process.env.NETLIFY_SITE_ID,
         token: process.env.NETLIFY_API_TOKEN,
     });
 
@@ -40,7 +42,7 @@ exports.handler = async (event) => {
     try {
         list = (await store.get('list', { type: 'json' })) || [];
     } catch (e) {
-        console.error('blobs get error:', e);
+        console.error('[saveKeywords] blobs get error:', e);
         list = [];
     }
 
@@ -49,49 +51,68 @@ exports.handler = async (event) => {
         return { statusCode: 400, body: 'duplicate keyword' };
     }
 
-    // 🔥 쿠팡에서 대표 상품 썸네일 뽑기 (실패해도 키워드는 저장되게)
+    // 🔥 대표 상품 썸네일 추출 (실패해도 키워드는 저장되게 try/catch)
     let thumbUrl = null;
     let bestProductName = null;
 
     try {
-        const raw = await coupang.searchProducts(keyword, 20);
+        const raw = await coupang.searchProducts(keyword);
 
-        // 응답 형태 정규화
-        let products = raw;
-        if (!Array.isArray(products)) {
-            products =
-                raw?.productData ||
-                raw?.data ||
-                raw?.rData ||
-                [];
-        }
+        console.log(
+            '[saveKeywords] coupang raw sample:',
+            JSON.stringify(raw).slice(0, 1500)
+        );
 
-        if (Array.isArray(products) && products.length > 0) {
-            let best = products[0];
+        // rCode 체크: 에러면 바로 패스
+        if (raw.rCode !== '0') {
+            console.log('[saveKeywords] coupang api error:', raw.rMessage);
+        } else {
+            // 정상일 때 data.productData 에서 상품 배열 꺼내기
+            let products = [];
 
-            for (const p of products) {
-                const reviews = p.reviewCount ?? p.ratingCount ?? 0;
-                const bestReviews = best.reviewCount ?? best.ratingCount ?? 0;
-                if (reviews > bestReviews) {
-                    best = p;
-                }
+            if (raw.data && Array.isArray(raw.data.productData)) {
+                products = raw.data.productData;
+            } else if (Array.isArray(raw.productData)) {
+                products = raw.productData;
             }
 
-            thumbUrl = best.imageUrl || null;
-            bestProductName = best.productName || null;
+            if (products.length > 0) {
+                let best = products[0];
+
+                for (const p of products) {
+                    const reviews = p.reviewCount ?? p.ratingCount ?? 0;
+                    const bestReviews = best.reviewCount ?? best.ratingCount ?? 0;
+                    if (reviews > bestReviews) {
+                        best = p;
+                    }
+                }
+
+                thumbUrl =
+                    best.productImage ??
+                    best.productImageUrl ??
+                    best.imageUrl ??
+                    best.productImageLarge ??
+                    null;
+
+                bestProductName = best.productName ?? best.itemName ?? null;
+            }
         }
+
+        console.log('[saveKeywords] thumbnail selected:', {
+            keyword,
+            hasImage: !!thumbUrl,
+            bestProductName,
+        });
     } catch (e) {
-        console.error('thumbnail fetch error:', e);
-        // 썸네일 못 구해도 그냥 진행
+        console.error('[saveKeywords] thumbnail fetch error:', e);
     }
 
-    // 저장될 아이템
     const item = {
         id: randomUUID(),
         keyword,
         slug: makeSlug(keyword),
-        imageUrl: thumbUrl,        // 인덱스 카드에서 쓸 대표 이미지
-        bestProductName,           // 나중에 필요하면 사용
+        imageUrl: thumbUrl, // 인덱스에서 쓸 이미지
+        bestProductName,
     };
 
     // 리스트에 추가 + 저장
@@ -99,7 +120,7 @@ exports.handler = async (event) => {
         list.push(item);
         await store.setJSON('list', list);
     } catch (e) {
-        console.error('blobs set error:', e);
+        console.error('[saveKeywords] blobs set error:', e);
         return { statusCode: 500, body: 'blob save error' };
     }
 
